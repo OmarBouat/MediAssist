@@ -26,7 +26,7 @@ public class HomeActivity extends AppCompatActivity {
         btnPrescriptions  = findViewById(R.id.btnPrescriptions);
         btnContacts       = findViewById(R.id.btnContacts);
         btnSchedule       = findViewById(R.id.btnSchedule);
-/*
+
         // Set listeners
         btnMedications.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, MedicationsActivity.class));
@@ -42,7 +42,7 @@ public class HomeActivity extends AppCompatActivity {
         });
         btnSchedule.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
-        });*/
+        });
     }
 
     @Override
@@ -53,9 +53,9 @@ public class HomeActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_settings) {/*
+        if (item.getItemId() == R.id.action_settings) {
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
-            return true;*/
+            return true;
         }
         return super.onOptionsItemSelected(item);
     }
