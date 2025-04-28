@@ -34,6 +34,13 @@ public class AddPrescriptionActivity extends AppCompatActivity {
 
         dbHelper = new MediAssistDatabaseHelper(this);
 
+        // >>>> ADD THIS for choosing the image <<<<
+        btnChooseImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                openImageChooser();
+            }
+        });
 
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -52,6 +59,13 @@ public class AddPrescriptionActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    private void openImageChooser(){
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "Select Prescription Image"), REQUEST_IMAGE_PICK);
     }
 
     @Override

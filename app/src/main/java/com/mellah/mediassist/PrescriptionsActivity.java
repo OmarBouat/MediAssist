@@ -1,6 +1,7 @@
 package com.mellah.mediassist;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.view.View;
@@ -29,6 +30,12 @@ public class PrescriptionsActivity extends AppCompatActivity {
         fabAdd.setOnClickListener(v -> {
             startActivity(new Intent(this, AddPrescriptionActivity.class));
         });
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE}, 1);
+            }
+        }
+
     }
 
     @Override
@@ -36,6 +43,20 @@ public class PrescriptionsActivity extends AppCompatActivity {
         super.onResume();
         loadPrescriptions();
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Permission granted!", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(this, "Permission denied! Cannot load images.", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
 
     private void loadPrescriptions() {
         Cursor cursor = dbHelper.getAllPrescriptions();

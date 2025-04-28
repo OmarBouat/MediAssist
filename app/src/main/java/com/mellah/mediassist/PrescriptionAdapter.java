@@ -3,12 +3,14 @@ package com.mellah.mediassist;
 import android.content.Context;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 
 public class PrescriptionAdapter extends RecyclerView.Adapter<PrescriptionAdapter.ViewHolder> {
     private final Context context;
@@ -38,11 +40,24 @@ public class PrescriptionAdapter extends RecyclerView.Adapter<PrescriptionAdapte
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (!cursor.moveToPosition(position)) return;
+
         String path = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_IMAGE_PATH));
         String desc = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_DESCRIPTION));
+
         holder.tvDesc.setText(desc != null ? desc : "");
-        holder.ivRx.setImageBitmap(BitmapFactory.decodeFile(path));
+
+        if (path != null) {
+            Uri imageUri = Uri.parse(path); // Parse the string to a real Uri
+            Glide.with(context)
+                    .load(imageUri)
+                    .placeholder(R.drawable.placeholder) // Show placeholder while loading
+                    .error(R.drawable.placeholder)        // Show placeholder if loading fails
+                    .into(holder.ivRx);
+        } else {
+            holder.ivRx.setImageResource(R.drawable.placeholder);
+        }
     }
+
 
     @Override
     public int getItemCount() {
