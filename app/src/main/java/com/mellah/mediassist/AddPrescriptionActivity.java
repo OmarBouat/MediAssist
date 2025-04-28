@@ -34,6 +34,14 @@ public class AddPrescriptionActivity extends AppCompatActivity {
 
         dbHelper = new MediAssistDatabaseHelper(this);
 
+        btnChooseImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent pick = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                pick.setType("image/*");
+                startActivityForResult(pick, REQUEST_IMAGE_PICK);
+            }
+        });
 
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
