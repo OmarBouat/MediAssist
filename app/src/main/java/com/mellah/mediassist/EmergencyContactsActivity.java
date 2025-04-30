@@ -25,10 +25,10 @@ public class EmergencyContactsActivity extends AppCompatActivity {
         rvContacts = findViewById(R.id.rvContacts);
         rvContacts.setLayoutManager(new LinearLayoutManager(this));
 
-        fabAdd = findViewById(R.id.fabAddContact);/*
+        fabAdd = findViewById(R.id.fabAddContact);
         fabAdd.setOnClickListener(v -> {
             startActivity(new Intent(this, AddEmergencyContactActivity.class));
-        });*/
+        });
     }
 
     @Override
