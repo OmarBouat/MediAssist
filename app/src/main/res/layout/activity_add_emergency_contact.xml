@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/etECName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contact Name" />
+        <EditText
+            android:id="@+id/etECPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Phone Number"
+            android:inputType="phone"
+            android:layout_marginTop="8dp" />
+        <EditText
+            android:id="@+id/etECRelation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Relation (optional)"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/btnSaveEC"
+            android:layout_marginTop="24dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save Contact" />
+    </LinearLayout>
+</ScrollView>

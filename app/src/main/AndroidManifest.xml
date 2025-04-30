@@ -15,6 +15,9 @@
         android:theme="@style/Theme.MediAssist"
         tools:targetApi="31">
         <activity
+            android:name=".AddEmergencyContactActivity"
+            android:exported="false" />
+        <activity
             android:name=".AddMedicationActivity"
             android:exported="false" />
         <activity
