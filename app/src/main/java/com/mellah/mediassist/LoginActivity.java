@@ -1,6 +1,7 @@
 package com.mellah.mediassist;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -39,6 +40,11 @@ public class LoginActivity extends AppCompatActivity {
 
                 boolean valid = dbHelper.checkUser(username, password);
                 if (valid) {
+                    int userId = dbHelper.getUserId(username);
+                    SharedPreferences prefs = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE);
+                    prefs.edit().putInt("currentUserId", userId).apply();
+
+
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                     intent.putExtra("username", username);
@@ -61,7 +67,7 @@ public class LoginActivity extends AppCompatActivity {
                     return;
                 }
 
-                long id = dbHelper.addUser(username, password);
+                long id = dbHelper.addUser(username, password, "", -1, "", -1, "");
                 if (id > 0) {
                     Toast.makeText(LoginActivity.this, "Registration successful", Toast.LENGTH_SHORT).show();
                 } else {

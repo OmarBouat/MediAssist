@@ -38,7 +38,9 @@ public class MedicationsActivity extends AppCompatActivity {
     }
 
     private void loadMedications() {
-        Cursor cursor = dbHelper.getAllMedications();
+        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
+        Cursor cursor = dbHelper.getAllMedications(userId);
         if (cursor != null) {
             adapter = new MedicationAdapter(this, cursor);
             rvMeds.setAdapter(adapter);

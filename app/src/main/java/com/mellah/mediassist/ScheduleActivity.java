@@ -29,9 +29,11 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     private void loadSchedule() {
+        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
         // Combine meds and appts cursor in adapter
-        Cursor meds = dbHelper.getAllMedications();
-        Cursor appts = dbHelper.getAllAppointments();
+        Cursor meds = dbHelper.getAllMedications(userId);
+        Cursor appts = dbHelper.getAllAppointments(userId);
         if (meds != null || appts != null) {
             adapter = new ScheduleAdapter(this, meds, appts);
             rvSchedule.setAdapter(adapter);

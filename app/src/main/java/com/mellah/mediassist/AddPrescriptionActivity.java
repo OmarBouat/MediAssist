@@ -50,7 +50,11 @@ public class AddPrescriptionActivity extends AppCompatActivity {
                     Toast.makeText(AddPrescriptionActivity.this, "Choose an image first", Toast.LENGTH_SHORT).show();
                     return;
                 }
-                long id = dbHelper.addPrescription(selectedImageUri.toString(), desc);
+
+                int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                        .getInt("currentUserId", -1);
+
+                long id = dbHelper.addPrescription(userId, selectedImageUri.toString(), desc);
                 if (id > 0) {
                     Toast.makeText(AddPrescriptionActivity.this, "Prescription saved", Toast.LENGTH_SHORT).show();
                     finish();

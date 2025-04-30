@@ -59,7 +59,9 @@ public class PrescriptionsActivity extends AppCompatActivity {
 
 
     private void loadPrescriptions() {
-        Cursor cursor = dbHelper.getAllPrescriptions();
+        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
+        Cursor cursor = dbHelper.getAllPrescriptions(userId);
         if (cursor != null) {
             adapter = new PrescriptionAdapter(this, cursor);
             rvRx.setAdapter(adapter);

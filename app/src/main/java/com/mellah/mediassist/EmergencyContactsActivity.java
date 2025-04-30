@@ -38,7 +38,9 @@ public class EmergencyContactsActivity extends AppCompatActivity {
     }
 
     private void loadContacts() {
-        Cursor cursor = dbHelper.getAllEmergencyContacts();
+        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
+        Cursor cursor = dbHelper.getAllEmergencyContacts(userId);
         if (cursor != null) {
             adapter = new ContactAdapter(this, cursor);
             rvContacts.setAdapter(adapter);

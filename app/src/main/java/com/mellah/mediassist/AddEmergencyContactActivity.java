@@ -33,7 +33,11 @@ public class AddEmergencyContactActivity extends AppCompatActivity {
                 Toast.makeText(this, "Name and phone are required", Toast.LENGTH_SHORT).show();
                 return;
             }
-            long id = dbHelper.addEmergencyContact(name, phone, relation);
+
+            int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                    .getInt("currentUserId", -1);
+
+            long id = dbHelper.addEmergencyContact(userId, name, phone, relation);
             if (id>0) {
                 Toast.makeText(this, "Contact added", Toast.LENGTH_SHORT).show();
                 finish();

@@ -98,7 +98,10 @@ public class AddMedicationActivity extends AppCompatActivity {
             String startDate = String.format("%04d-%02d-%02d", startYear, startMonth+1, startDay);
             String endDate = String.format("%04d-%02d-%02d", endYear, endMonth+1, endDay);
 
-            long id = dbHelper.addMedication(name, dosage, frequency, time, startDate, endDate, notes);
+            int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                    .getInt("currentUserId", -1);
+
+            long id = dbHelper.addMedication(userId, name, dosage, frequency, time, startDate, endDate, notes);
             if (id>0) {
                 Toast.makeText(this, "Medication added", Toast.LENGTH_SHORT).show();
                 finish();

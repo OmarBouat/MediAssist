@@ -38,7 +38,9 @@ public class AppointmentsActivity extends AppCompatActivity {
     }
 
     private void loadAppointments() {
-        Cursor cursor = dbHelper.getAllAppointments();
+        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
+        Cursor cursor = dbHelper.getAllAppointments(userId);
         if (cursor != null) {
             adapter = new AppointmentAdapter(this, cursor);
             rvAppts.setAdapter(adapter);

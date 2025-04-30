@@ -99,7 +99,10 @@ public class AddAppointmentActivity extends AppCompatActivity {
                 String time = String.format("%02d:%02d", apptHour, apptMinute);
                 int reminderOffset = 60; // default 60 minutes before, adjust or add UI if needed
 
-                long id = dbHelper.addAppointment(title, date, time, reminderOffset, notes);
+                int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                        .getInt("currentUserId", -1);
+
+                long id = dbHelper.addAppointment(userId, title, date, time, reminderOffset, notes);
                 if (id > 0) {
                     Toast.makeText(AddAppointmentActivity.this, "Appointment added", Toast.LENGTH_SHORT).show();
                     finish();
