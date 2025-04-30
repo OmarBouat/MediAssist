@@ -1,5 +1,6 @@
 package com.mellah.mediassist;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -22,7 +23,7 @@ public class LoginActivity extends AppCompatActivity {
 
         etUsername = findViewById(R.id.etUsername);
         etPassword = findViewById(R.id.etPassword);
-        btnLogin   = findViewById(R.id.btnLogin);
+        btnLogin = findViewById(R.id.btnLogin);
         btnRegister = findViewById(R.id.btnRegister);
 
         dbHelper = new MediAssistDatabaseHelper(this);
@@ -41,13 +42,16 @@ public class LoginActivity extends AppCompatActivity {
                 boolean valid = dbHelper.checkUser(username, password);
                 if (valid) {
                     int userId = dbHelper.getUserId(username);
-                    SharedPreferences prefs = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE);
-                    prefs.edit().putInt("currentUserId", userId).apply();
-
+                    // Use a separate SharedPreferences file for user sessions
+                    SharedPreferences prefs = getSharedPreferences("user_session", Context.MODE_PRIVATE);
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putBoolean("isLoggedIn", true);
+                    editor.putInt("currentUserId", userId); // Storing userId for future use
+                    editor.putString("username", username); // Storing username for future use
+                    editor.apply();
 
                     Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    intent.putExtra("username", username);
                     startActivity(intent);
                     finish();
                 } else {
@@ -75,5 +79,12 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Clear the input fields when returning to the LoginActivity.
+        etUsername.setText("");
+        etPassword.setText("");
     }
 }

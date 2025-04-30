@@ -9,7 +9,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class HomeActivity extends AppCompatActivity {
-    private Button btnMedications, btnAppointments, btnPrescriptions, btnContacts, btnSchedule;
+    private Button btnMedications, btnAppointments, btnPrescriptions, btnContacts, btnSchedule, btnSettings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,6 +26,7 @@ public class HomeActivity extends AppCompatActivity {
         btnPrescriptions  = findViewById(R.id.btnPrescriptions);
         btnContacts       = findViewById(R.id.btnContacts);
         btnSchedule       = findViewById(R.id.btnSchedule);
+        btnSettings        = findViewById(R.id.btnSettings);
 
         // Set listeners
         btnMedications.setOnClickListener(v -> {
@@ -42,6 +43,9 @@ public class HomeActivity extends AppCompatActivity {
         });
         btnSchedule.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
+        });
+        btnSettings.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
         });
     }
 
