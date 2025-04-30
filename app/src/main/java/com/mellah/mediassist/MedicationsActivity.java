@@ -25,10 +25,10 @@ public class MedicationsActivity extends AppCompatActivity {
         rvMeds = findViewById(R.id.rvMedications);
         rvMeds.setLayoutManager(new LinearLayoutManager(this));
 
-        fabAdd = findViewById(R.id.fabAddMedication);/*
+        fabAdd = findViewById(R.id.fabAddMedication);
         fabAdd.setOnClickListener(v -> {
             startActivity(new Intent(this, AddMedicationActivity.class));
-        });*/
+        });
     }
 
     @Override
