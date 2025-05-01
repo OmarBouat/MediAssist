@@ -2,8 +2,8 @@ package com.mellah.mediassist;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -21,8 +21,9 @@ public class AddAppointmentActivity extends AppCompatActivity {
     private Button btnPickDate, btnPickTime, btnSave;
     private MediAssistDatabaseHelper dbHelper;
 
+    private int apptId = -1;
     private int apptYear, apptMonth, apptDay;
-    private int apptHour, apptMinute;
+    private int apptHour, apptMinute, apptOffset = 60;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,10 +37,8 @@ public class AddAppointmentActivity extends AppCompatActivity {
         btnPickDate = findViewById(R.id.btnPickDate);
         btnPickTime = findViewById(R.id.btnPickTime);
         btnSave     = findViewById(R.id.btnSaveAppt);
+        dbHelper    = new MediAssistDatabaseHelper(this);
 
-        dbHelper = new MediAssistDatabaseHelper(this);
-
-        // Initialize with current date/time
         Calendar cal = Calendar.getInstance();
         apptYear   = cal.get(Calendar.YEAR);
         apptMonth  = cal.get(Calendar.MONTH);
@@ -49,68 +48,70 @@ public class AddAppointmentActivity extends AppCompatActivity {
         updateDateDisplay();
         updateTimeDisplay();
 
-        btnPickDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                DatePickerDialog dpd = new DatePickerDialog(
-                        AddAppointmentActivity.this,
-                        new DatePickerDialog.OnDateSetListener() {
-                            @Override
-                            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                                apptYear  = year;
-                                apptMonth = month;
-                                apptDay   = dayOfMonth;
-                                updateDateDisplay();
-                            }
-                        }, apptYear, apptMonth, apptDay);
-                dpd.show();
-            }
-        });
+        btnPickDate.setOnClickListener(v ->
+                new DatePickerDialog(this, (view,y,m,d) -> {
+                    apptYear=y; apptMonth=m; apptDay=d;
+                    updateDateDisplay();
+                }, apptYear, apptMonth, apptDay).show()
+        );
+        btnPickTime.setOnClickListener(v ->
+                new TimePickerDialog(this, (view,h,min) -> {
+                    apptHour=h; apptMinute=min;
+                    updateTimeDisplay();
+                }, apptHour, apptMinute, true).show()
+        );
 
-        btnPickTime.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                TimePickerDialog tpd = new TimePickerDialog(
-                        AddAppointmentActivity.this,
-                        new TimePickerDialog.OnTimeSetListener() {
-                            @Override
-                            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                                apptHour   = hourOfDay;
-                                apptMinute = minute;
-                                updateTimeDisplay();
-                            }
-                        }, apptHour, apptMinute, true);
-                tpd.show();
-            }
-        });
+        btnSave.setOnClickListener(v -> saveAppointment());
 
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String title = etTitle.getText().toString().trim();
-                String notes = etNotes.getText().toString().trim();
+        // Edit mode?
+        Intent intent = getIntent();
+        if (intent.hasExtra("apptId")) {
+            apptId = intent.getIntExtra("apptId", -1);
+            etTitle.setText(intent.getStringExtra("title"));
+            String date = intent.getStringExtra("date");
+            String[] dp = date.split("-");
+                    apptYear  = Integer.parseInt(dp[0]);
+            apptMonth = Integer.parseInt(dp[1]) - 1;
+            apptDay   = Integer.parseInt(dp[2]);
+            updateDateDisplay();
 
-                if (title.isEmpty()) {
-                    Toast.makeText(AddAppointmentActivity.this, "Enter appointment title", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-                // Format date/time
-                String date = String.format("%04d-%02d-%02d", apptYear, apptMonth+1, apptDay);
-                String time = String.format("%02d:%02d", apptHour, apptMinute);
-                int reminderOffset = 60; // default 60 minutes before, adjust or add UI if needed
+            String time = intent.getStringExtra("time");
+            String[] tp = time.split(":");
+                    apptHour   = Integer.parseInt(tp[0]);
+            apptMinute = Integer.parseInt(tp[1]);
+            updateTimeDisplay();
 
-                int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
-                        .getInt("currentUserId", -1);
+            apptOffset = intent.getIntExtra("offset", 60);
+            etNotes.setText(intent.getStringExtra("notes"));
+        }
+    }
 
-                long id = dbHelper.addAppointment(userId, title, date, time, reminderOffset, notes);
-                if (id > 0) {
-                    Toast.makeText(AddAppointmentActivity.this, "Appointment added", Toast.LENGTH_SHORT).show();
-                    finish();
-                } else {
-                    Toast.makeText(AddAppointmentActivity.this, "Failed to add appointment", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+    private void saveAppointment() {
+        String title = etTitle.getText().toString().trim();
+        if (title.isEmpty()) {
+            Toast.makeText(this, "Enter appointment title", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        String notes = etNotes.getText().toString().trim();
+        String date  = String.format("%04d-%02d-%02d", apptYear, apptMonth+1, apptDay);
+        String time  = String.format("%02d:%02d", apptHour, apptMinute);
+        int userId   = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                .getInt("currentUserId", -1);
+
+        boolean success;
+        if (apptId >= 0) {
+            success = dbHelper.updateAppointment(apptId, title, date, time, apptOffset, notes);
+        } else {
+            long id = dbHelper.addAppointment(userId, title, date, time, apptOffset, notes);
+            success = id > 0;
+        }
+
+        if (success) {
+            Toast.makeText(this, "Appointment saved", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "Failed to save appointment", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateDateDisplay() {

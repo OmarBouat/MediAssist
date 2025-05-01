@@ -297,6 +297,44 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 null, null, COLUMN_APPT_DATE + " ASC, " + COLUMN_APPT_TIME + " ASC");
     }
 
+    /**
+     * Update an existing appointment.
+     * @return true if at least one row was updated
+     */
+    public boolean updateAppointment(int apptId,
+                                     String title,
+                                     String date,
+                                     String time,
+                                     int offset,
+                                     String notes) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_APPT_TITLE, title);
+        cv.put(COLUMN_APPT_DATE, date);
+        cv.put(COLUMN_APPT_TIME, time);
+        cv.put(COLUMN_APPT_OFFSET, offset);
+        cv.put(COLUMN_APPT_NOTES, notes);
+        int rows = db.update(TABLE_APPOINTMENTS,
+                cv,
+                COLUMN_APPT_ID + " = ?",
+                new String[]{String.valueOf(apptId)});
+        db.close();
+        return rows > 0;
+    }
+
+    /**
+     * Delete an appointment by its ID.
+     */
+    public boolean deleteAppointment(int apptId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_APPOINTMENTS,
+                COLUMN_APPT_ID + " = ?",
+                new String[]{String.valueOf(apptId)});
+        db.close();
+        return rows > 0;
+    }
+
+
     public long addPrescription(int userId, String imagePath, String description) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
