@@ -33,7 +33,7 @@ public class ScheduleActivity extends AppCompatActivity {
         rvSchedule   = findViewById(R.id.rvSchedule);
         rvSchedule.setLayoutManager(new LinearLayoutManager(this));
 
-        currentUserId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+        currentUserId = getSharedPreferences("user_session", MODE_PRIVATE)
                 .getInt("currentUserId", -1);
         if (currentUserId < 0) {
             Toast.makeText(this, "No user signed in", Toast.LENGTH_SHORT).show();
@@ -56,7 +56,6 @@ public class ScheduleActivity extends AppCompatActivity {
         List<ScheduleItem> items = new ArrayList<>();
         String dateStr = date.toString(); // "YYYY-MM-DD"
 
-        // 1️⃣ Medications: those active on 'date'
         try (Cursor c = dbHelper.getAllMedications(currentUserId)) {
             int idxId    = c.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_MED_ID);
             int idxName  = c.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_MED_NAME);
@@ -85,7 +84,6 @@ public class ScheduleActivity extends AppCompatActivity {
             }
         }
 
-        // 2️⃣ Appointments: those on 'date'
         try (Cursor c2 = dbHelper.getAllAppointments(currentUserId)) {
             int idxId    = c2.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_APPT_ID);
             int idxTitle = c2.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_APPT_TITLE);
@@ -104,7 +102,6 @@ public class ScheduleActivity extends AppCompatActivity {
             }
         }
 
-        // 3️⃣ Bind to adapter
         DailyScheduleAdapter.OnItemClickListener listener = item -> {
             if (item.type == ScheduleItem.Type.MEDICATION) {
                 Intent i = new Intent(this, AddMedicationActivity.class);
