@@ -4,12 +4,12 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Button;
+import android.widget.ImageButton;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 public class HomeActivity extends AppCompatActivity {
-    private Button btnMedications, btnAppointments, btnPrescriptions, btnContacts, btnSchedule, btnSettings, btnProfile;
+    private ImageButton btnMedications, btnAppointments, btnPrescriptions, btnContacts, btnSchedule, btnSettings, btnProfile;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,7 +20,7 @@ public class HomeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("MediAssist");
 
-        // Initialize buttons
+        // Initialize image buttons
         btnMedications    = findViewById(R.id.btnMedications);
         btnAppointments   = findViewById(R.id.btnAppointments);
         btnPrescriptions  = findViewById(R.id.btnPrescriptions);
@@ -28,7 +28,6 @@ public class HomeActivity extends AppCompatActivity {
         btnSchedule       = findViewById(R.id.btnSchedule);
         btnSettings       = findViewById(R.id.btnSettings);
         btnProfile        = findViewById(R.id.btnProfile);
-
 
         // Set listeners
         btnMedications.setOnClickListener(v -> {
@@ -46,9 +45,9 @@ public class HomeActivity extends AppCompatActivity {
         btnSchedule.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, ScheduleActivity.class));
         });
-        btnProfile.setOnClickListener(v ->
-                startActivity(new Intent(this, ProfileActivity.class))
-        );
+        btnProfile.setOnClickListener(v -> {
+            startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
+        });
         btnSettings.setOnClickListener(v -> {
             startActivity(new Intent(HomeActivity.this, SettingsActivity.class));
         });

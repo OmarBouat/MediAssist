@@ -12,9 +12,8 @@
         <androidx.appcompat.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="?attr/actionBarSize"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
-
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
@@ -25,75 +24,213 @@
         <GridLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:alignmentMode="alignMargins"
             android:columnCount="2"
-            android:rowCount="3"
-            android:padding="16dp"
-            android:rowOrderPreserved="false"
-            android:columnOrderPreserved="false">
+            android:paddingBottom="16dp"
+            android:alignmentMode="alignMargins"
+            android:useDefaultMargins="true">
 
-            <Button
-                android:id="@+id/btnMedications"
-                style="@style/Widget.AppCompat.Button.Colored"
+            <!-- Medications -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Medications" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnAppointments"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnMedications"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/medication"
+                    android:contentDescription="medications" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Medications"
+                    android:textAlignment="center"
+                    android:textColor="#BC0000"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Appointments -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Appointments" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnPrescriptions"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnAppointments"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/appointment"
+                    android:contentDescription="appointments" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Appointments"
+                    android:textAlignment="center"
+                    android:textColor="#F68E8E"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Prescriptions -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Prescriptions" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnContacts"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnPrescriptions"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/prescription"
+                    android:contentDescription="prescriptions" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Prescriptions"
+                    android:textAlignment="center"
+                    android:textColor="#D99E05"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Emergency Contacts -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Emergency Contacts" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnSchedule"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnContacts"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/emergency"
+                    android:contentDescription="emergency_contacts" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Contacts"
+                    android:textAlignment="center"
+                    android:textColor="#F80000"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Schedule -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Schedule" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnProfile"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnSchedule"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/schedule"
+                    android:contentDescription="schedule" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Schedule"
+                    android:textAlignment="center"
+                    android:textColor="#023352"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Profile -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Profile" />
+                android:orientation="vertical"
+                android:gravity="center">
 
-            <Button
-                android:id="@+id/btnSettings"
-                style="@style/Widget.AppCompat.Button.Colored"
+                <ImageButton
+                    android:id="@+id/btnProfile"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/profile"
+                    android:contentDescription="profile" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Profile"
+                    android:textAlignment="center"
+                    android:textColor="#13BED7"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Settings -->
+            <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
                 android:layout_columnWeight="1"
-                android:text="Settings" />
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:scaleType="centerCrop"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@drawable/settings"
+                    android:contentDescription="settings" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="monospace"
+                    android:paddingBottom="20dp"
+                    android:text="Settings"
+                    android:textAlignment="center"
+                    android:textColor="#767575"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
 
         </GridLayout>
     </ScrollView>
