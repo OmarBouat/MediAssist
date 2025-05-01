@@ -8,62 +8,61 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mediassist.db";
-    private static final int DATABASE_VERSION = 2;
+    private static final int DATABASE_VERSION = 3;
 
     // Table names
-    public static final String TABLE_USERS              = "users";
-    public static final String TABLE_MEDICATIONS        = "medications";
-    public static final String TABLE_APPOINTMENTS       = "appointments";
-    public static final String TABLE_PRESCRIPTIONS      = "prescriptions";
+    public static final String TABLE_USERS = "users";
+    public static final String TABLE_MEDICATIONS = "medications";
+    public static final String TABLE_APPOINTMENTS = "appointments";
+    public static final String TABLE_PRESCRIPTIONS = "prescriptions";
     public static final String TABLE_EMERGENCY_CONTACTS = "emergency_contacts";
 
-    // Common column for FK
+    // Common foreign key
     public static final String COLUMN_USER_REF = "user_id";
 
     // Users columns
-    public static final String COLUMN_USER_ID         = "id";
-    public static final String COLUMN_USER_USERNAME   = "username";
-    public static final String COLUMN_USER_PASSWORD   = "password";
+    public static final String COLUMN_USER_ID = "id";
+    public static final String COLUMN_USER_USERNAME = "username";
+    public static final String COLUMN_USER_PASSWORD = "password";
     public static final String COLUMN_USER_BLOOD_TYPE = "blood_type";
-    public static final String COLUMN_USER_AGE        = "age";
-    public static final String COLUMN_USER_GENDER     = "gender";
-    public static final String COLUMN_USER_WEIGHT     = "weight";
-    public static final String COLUMN_USER_ALLERGIES  = "allergies";
+    public static final String COLUMN_USER_AGE = "age";
+    public static final String COLUMN_USER_GENDER = "gender";
+    public static final String COLUMN_USER_WEIGHT = "weight";
+    public static final String COLUMN_USER_ALLERGIES = "allergies";
     public static final String COLUMN_USER_CREATED_AT = "created_at";
 
-    // Other tables columns remain same (Medication, Appointment, Prescription, Contact)
-    // Medications
-    public static final String COLUMN_MED_ID         = "id";
-    public static final String COLUMN_MED_NAME       = "name";
-    public static final String COLUMN_MED_DOSAGE     = "dosage";
-    public static final String COLUMN_MED_FREQUENCY  = "frequency";
-    public static final String COLUMN_MED_TIME       = "time";
+    // Medications columns
+    public static final String COLUMN_MED_ID = "id";
+    public static final String COLUMN_MED_TIMES_JSON = "times_json"; // renamed
+    public static final String COLUMN_MED_NAME = "name";
+    public static final String COLUMN_MED_DOSAGE = "dosage";
+    public static final String COLUMN_MED_FREQUENCY = "frequency";
     public static final String COLUMN_MED_START_DATE = "start_date";
-    public static final String COLUMN_MED_END_DATE   = "end_date";
-    public static final String COLUMN_MED_NOTES      = "notes";
+    public static final String COLUMN_MED_END_DATE = "end_date";
+    public static final String COLUMN_MED_NOTES = "notes";
     public static final String COLUMN_MED_CREATED_AT = "created_at";
 
     // Appointments
-    public static final String COLUMN_APPT_ID         = "id";
-    public static final String COLUMN_APPT_TITLE      = "title";
-    public static final String COLUMN_APPT_DATE       = "date";
-    public static final String COLUMN_APPT_TIME       = "time";
-    public static final String COLUMN_APPT_OFFSET     = "reminder_offset";
-    public static final String COLUMN_APPT_NOTES      = "notes";
+    public static final String COLUMN_APPT_ID = "id";
+    public static final String COLUMN_APPT_TITLE = "title";
+    public static final String COLUMN_APPT_DATE = "date";
+    public static final String COLUMN_APPT_TIME = "time";
+    public static final String COLUMN_APPT_OFFSET = "reminder_offset";
+    public static final String COLUMN_APPT_NOTES = "notes";
     public static final String COLUMN_APPT_CREATED_AT = "created_at";
 
     // Prescriptions
-    public static final String COLUMN_RX_ID           = "id";
-    public static final String COLUMN_RX_IMAGE_PATH   = "image_path";
-    public static final String COLUMN_RX_DESCRIPTION  = "description";
-    public static final String COLUMN_RX_DATE_ADDED   = "date_added";
+    public static final String COLUMN_RX_ID = "id";
+    public static final String COLUMN_RX_IMAGE_PATH = "image_path";
+    public static final String COLUMN_RX_DESCRIPTION = "description";
+    public static final String COLUMN_RX_DATE_ADDED = "date_added";
 
     // Emergency Contacts
-    public static final String COLUMN_EC_ID           = "id";
-    public static final String COLUMN_EC_NAME         = "name";
-    public static final String COLUMN_EC_PHONE        = "phone";
-    public static final String COLUMN_EC_RELATION     = "relation";
-    public static final String COLUMN_EC_CREATED_AT   = "created_at";
+    public static final String COLUMN_EC_ID = "id";
+    public static final String COLUMN_EC_NAME = "name";
+    public static final String COLUMN_EC_PHONE = "phone";
+    public static final String COLUMN_EC_RELATION = "relation";
+    public static final String COLUMN_EC_CREATED_AT = "created_at";
 
     public MediAssistDatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -85,14 +84,14 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 + ");";
         db.execSQL(CREATE_USERS);
 
-        // 2. Medications table with user_id FK
+        // Medications table with JSON times
         String CREATE_MED = "CREATE TABLE " + TABLE_MEDICATIONS + " ("
                 + COLUMN_MED_ID + " INTEGER PRIMARY KEY AUTOINCREMENT,"
                 + COLUMN_USER_REF + " INTEGER NOT NULL,"
                 + COLUMN_MED_NAME + " TEXT NOT NULL,"
                 + COLUMN_MED_DOSAGE + " TEXT NOT NULL,"
                 + COLUMN_MED_FREQUENCY + " TEXT NOT NULL,"
-                + COLUMN_MED_TIME + " TEXT NOT NULL,"
+                + COLUMN_MED_TIMES_JSON + " TEXT NOT NULL,"
                 + COLUMN_MED_START_DATE + " TEXT NOT NULL,"
                 + COLUMN_MED_END_DATE + " TEXT,"
                 + COLUMN_MED_NOTES + " TEXT,"
@@ -100,7 +99,8 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 + "FOREIGN KEY(" + COLUMN_USER_REF + ") REFERENCES " + TABLE_USERS + "(" + COLUMN_USER_ID + ") ON DELETE CASCADE"
                 + ");";
         db.execSQL(CREATE_MED);
-        db.execSQL("CREATE INDEX idx_medications_user_time ON " + TABLE_MEDICATIONS + "(" + COLUMN_USER_REF + ", " + COLUMN_MED_TIME + ");");
+        db.execSQL("CREATE INDEX idx_medications_user_times ON " + TABLE_MEDICATIONS
+                + "(" + COLUMN_USER_REF + ", " + COLUMN_MED_TIMES_JSON + ");");
 
         // 3. Appointments
         String CREATE_APPT = "CREATE TABLE " + TABLE_APPOINTMENTS + " ("
@@ -145,15 +145,15 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Drop and recreate tables for schema changes
-        db.execSQL("PRAGMA foreign_keys = OFF;");
+        // For simplicity, drop & recreate
+        db.execSQL("PRAGMA foreign_keys=OFF;");
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_EMERGENCY_CONTACTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PRESCRIPTIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_APPOINTMENTS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_MEDICATIONS);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_USERS);
         onCreate(db);
-        db.execSQL("PRAGMA foreign_keys = ON;");
+        db.execSQL("PRAGMA foreign_keys=ON;");
     }
 
     // --- User methods updated for profile ---
@@ -179,10 +179,11 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_USERS,
                 new String[]{COLUMN_USER_ID},
-                COLUMN_USER_USERNAME+"=? AND "+COLUMN_USER_PASSWORD+"=?",
-                new String[]{username,password}, null, null, null);
-        boolean exists = cursor.getCount()>0;
-        cursor.close(); db.close();
+                COLUMN_USER_USERNAME + "=? AND " + COLUMN_USER_PASSWORD + "=?",
+                new String[]{username, password}, null, null, null);
+        boolean exists = cursor.getCount() > 0;
+        cursor.close();
+        db.close();
         return exists;
     }
 
@@ -190,25 +191,30 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.query(TABLE_USERS,
                 new String[]{COLUMN_USER_ID},
-                COLUMN_USER_USERNAME+"=?",
+                COLUMN_USER_USERNAME + "=?",
                 new String[]{username}, null, null, null);
         int id = -1;
-        if(cursor.moveToFirst()) id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID));
-        cursor.close(); db.close();
+        if (cursor.moveToFirst()) id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_USER_ID));
+        cursor.close();
+        db.close();
         return id;
     }
 
-    // --- Modified CRUD methods with user filter ---
-    public long addMedication(int userId, String name, String dosage,
-                              String frequency, String time, String startDate,
-                              String endDate, String notes) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public long addMedication(int userId,
+                              String name,
+                              String dosage,
+                              String frequency,
+                              String timesJson,
+                              String startDate,
+                              String endDate,
+                              String notes) {
+        SQLiteDatabase db = getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_USER_REF, userId);
         cv.put(COLUMN_MED_NAME, name);
         cv.put(COLUMN_MED_DOSAGE, dosage);
         cv.put(COLUMN_MED_FREQUENCY, frequency);
-        cv.put(COLUMN_MED_TIME, time);
+        cv.put(COLUMN_MED_TIMES_JSON, timesJson);
         cv.put(COLUMN_MED_START_DATE, startDate);
         cv.put(COLUMN_MED_END_DATE, endDate);
         cv.put(COLUMN_MED_NOTES, notes);
@@ -218,10 +224,10 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllMedications(int userId) {
-        SQLiteDatabase db = this.getReadableDatabase();
+        SQLiteDatabase db = getReadableDatabase();
         return db.query(TABLE_MEDICATIONS, null,
-                COLUMN_USER_REF+"=?", new String[]{String.valueOf(userId)},
-                null,null, COLUMN_MED_TIME+" ASC");
+                COLUMN_USER_REF + "=?", new String[]{String.valueOf(userId)},
+                null, null, COLUMN_MED_CREATED_AT + " DESC");
     }
 
     // Similarly update appointments, prescriptions, and contacts:
@@ -243,8 +249,8 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllAppointments(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_APPOINTMENTS, null,
-                COLUMN_USER_REF+"=?", new String[]{String.valueOf(userId)},
-                null,null, COLUMN_APPT_DATE+" ASC, "+COLUMN_APPT_TIME+" ASC");
+                COLUMN_USER_REF + "=?", new String[]{String.valueOf(userId)},
+                null, null, COLUMN_APPT_DATE + " ASC, " + COLUMN_APPT_TIME + " ASC");
     }
 
     public long addPrescription(int userId, String imagePath, String description) {
@@ -261,8 +267,8 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllPrescriptions(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_PRESCRIPTIONS, null,
-                COLUMN_USER_REF+"=?", new String[]{String.valueOf(userId)},
-                null,null, COLUMN_RX_DATE_ADDED+" DESC");
+                COLUMN_USER_REF + "=?", new String[]{String.valueOf(userId)},
+                null, null, COLUMN_RX_DATE_ADDED + " DESC");
     }
 
     public long addEmergencyContact(int userId, String name, String phone, String relation) {
@@ -280,7 +286,8 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     public Cursor getAllEmergencyContacts(int userId) {
         SQLiteDatabase db = this.getReadableDatabase();
         return db.query(TABLE_EMERGENCY_CONTACTS, null,
-                COLUMN_USER_REF+"=?", new String[]{String.valueOf(userId)},
-                null,null, COLUMN_EC_NAME+" ASC");
+                COLUMN_USER_REF + "=?", new String[]{String.valueOf(userId)},
+                null, null, COLUMN_EC_NAME + " ASC");
+
     }
 }
