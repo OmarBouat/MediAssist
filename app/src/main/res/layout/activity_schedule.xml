@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -9,13 +10,16 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:title="Schedule"
-        app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+        android:background="?attr/colorPrimary"/>
+
+    <CalendarView
+        android:id="@+id/calendarView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvSchedule"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
-
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+</LinearLayout>

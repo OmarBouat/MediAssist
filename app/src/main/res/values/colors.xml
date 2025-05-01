@@ -2,4 +2,6 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="schedule_medication_color">#388E3C</color>   <!-- green -->
+    <color name="schedule_appointment_color">#1976D2</color> <!-- blue -->
 </resources>

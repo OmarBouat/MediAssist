@@ -1,117 +1,154 @@
 package com.mellah.mediassist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
+import androidx.core.content.ContextCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
+/**
+ * Adapter showing a single day's ScheduleItems,
+ * each with just an HH:mm in its `time` field.
+ */
 public class ScheduleAdapter extends RecyclerView.Adapter<ScheduleAdapter.ViewHolder> {
-    private Context context;
-    private List<ScheduleItem> items;
-    private Gson gson = new Gson();
-    private SimpleDateFormat dtFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.getDefault());
 
-    public ScheduleAdapter(Context context, Cursor medsCursor, Cursor apptsCursor) {
-        this.context = context;
-        items = new ArrayList<>();
+    public interface OnItemClickListener {
+        void onClick(ScheduleItem item);
+    }
 
-        // 1. Expand medication schedules
+    private final Context context;
+    private final List<ScheduleItem> items;
+    private final OnItemClickListener listener;
+    private final Gson gson = new Gson();
+
+    /**
+     * @param context     Activity context
+     * @param medsCursor  Cursor from getAllMedications(userId)
+     * @param apptsCursor Cursor from getAllAppointments(userId)
+     * @param forDate     The LocalDate for which to show items
+     * @param listener    Callback for click/edit
+     */
+    public ScheduleAdapter(Context context,
+                           Cursor medsCursor,
+                           Cursor apptsCursor,
+                           LocalDate forDate,
+                           OnItemClickListener listener) {
+        this.context  = context;
+        this.listener = listener;
+        this.items    = new ArrayList<>();
+
+        String dateStr = forDate.toString(); // "YYYY-MM-DD"
+        // 1) Medications active on forDate
         if (medsCursor != null) {
-            int idxName   = medsCursor.getColumnIndexOrThrow(
+            int idxId    = medsCursor.getColumnIndexOrThrow(
+                    MediAssistDatabaseHelper.COLUMN_MED_ID);
+            int idxName  = medsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_MED_NAME);
-            int idxStart  = medsCursor.getColumnIndexOrThrow(
+            int idxStart = medsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_MED_START_DATE);
-            int idxEnd    = medsCursor.getColumnIndexOrThrow(
+            int idxEnd   = medsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_MED_END_DATE);
-            int idxTimes  = medsCursor.getColumnIndexOrThrow(
+            int idxTimes = medsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_MED_TIMES_JSON);
 
             while (medsCursor.moveToNext()) {
-                String name = medsCursor.getString(idxName);
-                String startDate = medsCursor.getString(idxStart);
-                String endDate   = medsCursor.getString(idxEnd);
-                String timesJson  = medsCursor.getString(idxTimes);
+                int medId       = medsCursor.getInt(idxId);
+                String name     = medsCursor.getString(idxName);
+                LocalDate start = LocalDate.parse(medsCursor.getString(idxStart));
+                LocalDate end   = LocalDate.parse(medsCursor.getString(idxEnd));
 
-                List<String> times = gson.fromJson(timesJson,
-                        new TypeToken<List<String>>(){}.getType());
-                LocalDate d = LocalDate.parse(startDate);
-                LocalDate e = LocalDate.parse(endDate);
-                while (!d.isAfter(e)) {
+                if (!forDate.isBefore(start) && !forDate.isAfter(end)) {
+                    List<String> times = gson.fromJson(
+                            medsCursor.getString(idxTimes),
+                            new TypeToken<List<String>>(){}.getType()
+                    );
                     for (String t : times) {
+                        // only the time portion
                         items.add(new ScheduleItem(
-                                "Medication: " + name,
-                                d + " " + t
+                                medId,
+                                ScheduleItem.Type.MEDICATION,
+                                name,
+                                t
                         ));
                     }
-                    d = d.plusDays(1);
                 }
             }
         }
 
-        // 2. Add appointments (unchanged)
+        // 2) Appointments exactly on forDate
         if (apptsCursor != null) {
+            int idxId    = apptsCursor.getColumnIndexOrThrow(
+                    MediAssistDatabaseHelper.COLUMN_APPT_ID);
             int idxTitle = apptsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_APPT_TITLE);
             int idxDate  = apptsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_APPT_DATE);
             int idxTime  = apptsCursor.getColumnIndexOrThrow(
                     MediAssistDatabaseHelper.COLUMN_APPT_TIME);
+
             while (apptsCursor.moveToNext()) {
-                String title = apptsCursor.getString(idxTitle);
-                String date  = apptsCursor.getString(idxDate);
-                String time  = apptsCursor.getString(idxTime);
-                items.add(new ScheduleItem(
-                        "Appointment: " + title,
-                        date + " " + time
-                ));
+                String d = apptsCursor.getString(idxDate);
+                if (dateStr.equals(d)) {
+                    String t = apptsCursor.getString(idxTime);
+                    items.add(new ScheduleItem(
+                            apptsCursor.getInt(idxId),
+                            ScheduleItem.Type.APPOINTMENT,
+                            apptsCursor.getString(idxTitle),
+                            t
+                    ));
+                }
             }
         }
 
-        // 3. Sort by parsed datetime
-        Collections.sort(items, Comparator.comparing(item -> {
-            try { return dtFormat.parse(item.dateTime); }
-            catch (Exception e) { return new Date(0); }
-        }));
+        // 3) Sort by HH:mm
+        Collections.sort(items, Comparator.comparing(si -> si.time));
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context)
+        View v = LayoutInflater.from(context)
                 .inflate(R.layout.item_schedule, parent, false);
-        return new ViewHolder(view);
+        return new ViewHolder(v);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int pos) {
         ScheduleItem si = items.get(pos);
         holder.tvLabel.setText(si.label);
-        holder.tvDateTime.setText(si.dateTime);
+        holder.tvTime .setText(si.time);
+
+        int colorRes = (si.type == ScheduleItem.Type.MEDICATION)
+                ? R.color.schedule_medication_color
+                : R.color.schedule_appointment_color;
+        int color = ContextCompat.getColor(context, colorRes);
+        holder.tvLabel.setTextColor(color);
+        holder.tvTime .setTextColor(color);
+
+        holder.itemView.setOnClickListener(v -> listener.onClick(si));
     }
 
     @Override
-    public int getItemCount() { return items.size(); }
+    public int getItemCount() {
+        return items.size();
+    }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvLabel, tvDateTime;
-        ViewHolder(View v) {
-            super(v);
-            tvLabel    = v.findViewById(R.id.tvSchedLabel);
-            tvDateTime = v.findViewById(R.id.tvSchedDateTime);
+        final TextView tvLabel, tvTime;
+        ViewHolder(View itemView) {
+            super(itemView);
+            tvLabel = itemView.findViewById(R.id.tvSchedLabel);
+            tvTime  = itemView.findViewById(R.id.tvSchedDateTime);
         }
     }
 }

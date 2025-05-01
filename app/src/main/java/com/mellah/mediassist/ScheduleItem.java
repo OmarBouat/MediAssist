@@ -1,12 +1,17 @@
 package com.mellah.mediassist;
 
 public class ScheduleItem {
-    public final String label;
-    public final String dateTime;
+    public enum Type { MEDICATION, APPOINTMENT }
 
-    public ScheduleItem(String label, String dateTime) {
+    public final int    id;
+    public final Type   type;
+    public final String label;
+    public final String time;  // e.g. "08:00" or "14:30"
+
+    public ScheduleItem(int id, Type type, String label, String time) {
+        this.id    = id;
+        this.type  = type;
         this.label = label;
-        this.dateTime = dateTime;
+        this.time  = time;
     }
 }
-
