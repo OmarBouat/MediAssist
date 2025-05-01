@@ -208,7 +208,7 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                               String startDate,
                               String endDate,
                               String notes) {
-        SQLiteDatabase db = getWritableDatabase();
+        SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_USER_REF, userId);
         cv.put(COLUMN_MED_NAME, name);
@@ -224,10 +224,54 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     }
 
     public Cursor getAllMedications(int userId) {
-        SQLiteDatabase db = getReadableDatabase();
-        return db.query(TABLE_MEDICATIONS, null,
-                COLUMN_USER_REF + "=?", new String[]{String.valueOf(userId)},
-                null, null, COLUMN_MED_CREATED_AT + " DESC");
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_MEDICATIONS,
+                null,
+                COLUMN_USER_REF + " = ?",
+                new String[]{String.valueOf(userId)},
+                null, null,
+                COLUMN_MED_NAME + " ASC");
+    }
+
+    /**
+     * Update an existing medication entry.
+     * @return true if at least one row was updated
+     */
+    public boolean updateMedication(int medId,
+                                    String name,
+                                    String dosage,
+                                    String frequency,
+                                    String timesJson,
+                                    String startDate,
+                                    String endDate,
+                                    String notes) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_MED_NAME, name);
+        cv.put(COLUMN_MED_DOSAGE, dosage);
+        cv.put(COLUMN_MED_FREQUENCY, frequency);
+        cv.put(COLUMN_MED_TIMES_JSON, timesJson);
+        cv.put(COLUMN_MED_START_DATE, startDate);
+        cv.put(COLUMN_MED_END_DATE, endDate);
+        cv.put(COLUMN_MED_NOTES, notes);
+        int rows = db.update(TABLE_MEDICATIONS,
+                cv,
+                COLUMN_MED_ID + " = ?",
+                new String[]{String.valueOf(medId)});
+        db.close();
+        return rows > 0;
+    }
+
+    /**
+     * Delete a medication by its ID.
+     */
+    public boolean deleteMedication(int medId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(TABLE_MEDICATIONS,
+                COLUMN_MED_ID + " = ?",
+                new String[]{String.valueOf(medId)});
+        db.close();
+        return rows > 0;
     }
 
     // Similarly update appointments, prescriptions, and contacts:

@@ -33,5 +33,27 @@
         android:layout_height="wrap_content"
         android:textSize="14sp"
         android:textColor="#555"
-        android:paddingBottom="4dp" />
+        android:paddingBottom="8dp" />
+
+    <!-- Edit/Delete buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end">
+
+        <Button
+            android:id="@+id/btnEditMed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/btnDeleteMed"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:textColor="#F44336" />
+    </LinearLayout>
 </LinearLayout>

@@ -2,6 +2,7 @@ package com.mellah.mediassist;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -33,6 +34,9 @@ public class AddMedicationActivity extends AppCompatActivity {
     private LayoutInflater inflater;
     private Calendar calendar;
 
+    private boolean isEditMode = false;
+    private int medId = -1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -55,7 +59,6 @@ public class AddMedicationActivity extends AppCompatActivity {
         inflater     = LayoutInflater.from(this);
         calendar     = Calendar.getInstance();
 
-        // Setup Date Pickers
         final int year  = calendar.get(Calendar.YEAR);
         final int month = calendar.get(Calendar.MONTH);
         final int day   = calendar.get(Calendar.DAY_OF_MONTH);
@@ -72,30 +75,54 @@ public class AddMedicationActivity extends AppCompatActivity {
                 (view, y, m, d) -> updateDateText(tvEndDate, y, m, d),
                 year, month, day).show());
 
-        // Setup NumberPicker
         npTimesPerDay.setMinValue(1);
         npTimesPerDay.setMaxValue(10);
         npTimesPerDay.setValue(1);
-        generateTimePickers(1);
 
         npTimesPerDay.setOnValueChangedListener((picker, oldVal, newVal) ->
                 generateTimePickers(newVal)
         );
 
-        // Save button
         btnSave.setOnClickListener(v -> saveMedication());
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("medId")) {
+            isEditMode = true;
+            medId = intent.getIntExtra("medId", -1);
+            String name = intent.getStringExtra("name");
+            String dosage = intent.getStringExtra("dosage");
+            String frequency = intent.getStringExtra("frequency");
+            String timesJson = intent.getStringExtra("timesJson");
+            String startDate = intent.getStringExtra("startDate");
+            String endDate = intent.getStringExtra("endDate");
+            String notes = intent.getStringExtra("notes");
+
+            etName.setText(name);
+            etDosage.setText(dosage);
+            etFrequency.setText(frequency);
+            tvStartDate.setText(startDate);
+            tvEndDate.setText(endDate);
+            etNotes.setText(notes);
+
+            List<String> timesList = new Gson().fromJson(timesJson, List.class);
+            npTimesPerDay.setValue(timesList.size());
+            generateTimePickers(timesList.size());
+            for (int i = 0; i < timesList.size(); i++) {
+                View row = llTimePickers.getChildAt(i);
+                TextView tv = row.findViewById(R.id.tvTimeLabel);
+                tv.setText(timesList.get(i));
+            }
+        } else {
+            generateTimePickers(1);
+        }
     }
 
-    /**
-     * Dynamically generates time-picker rows based on count.
-     */
     private void generateTimePickers(int count) {
         llTimePickers.removeAllViews();
         for (int i = 0; i < count; i++) {
             View timeView = inflater.inflate(R.layout.time_picker_item, llTimePickers, false);
             TextView tvTimeLabel = timeView.findViewById(R.id.tvTimeLabel);
             Button btnPickTime  = timeView.findViewById(R.id.btnPickTime);
-
             btnPickTime.setOnClickListener(v -> {
                 int h = calendar.get(Calendar.HOUR_OF_DAY);
                 int m = calendar.get(Calendar.MINUTE);
@@ -106,14 +133,10 @@ public class AddMedicationActivity extends AppCompatActivity {
                         h, m, true
                 ).show();
             });
-
             llTimePickers.addView(timeView);
         }
     }
 
-    /**
-     * Reads inputs, validates, serializes times, and saves to database.
-     */
     private void saveMedication() {
         String name      = etName.getText().toString().trim();
         String dosage    = etDosage.getText().toString().trim();
@@ -127,7 +150,6 @@ public class AddMedicationActivity extends AppCompatActivity {
             return;
         }
 
-        // Collect times
         List<String> timesList = new ArrayList<>();
         for (int i = 0; i < llTimePickers.getChildCount(); i++) {
             View row = llTimePickers.getChildAt(i);
@@ -140,10 +162,7 @@ public class AddMedicationActivity extends AppCompatActivity {
             timesList.add(t);
         }
 
-        // Serialize to JSON
         String timesJson = new Gson().toJson(timesList);
-
-        // Retrieve current user
         SharedPreferences prefs = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE);
         int userId = prefs.getInt("currentUserId", -1);
         if (userId < 0) {
@@ -151,21 +170,22 @@ public class AddMedicationActivity extends AppCompatActivity {
             return;
         }
 
-        long id = dbHelper.addMedication(
-                userId, name, dosage, freq, timesJson,
-                startDate, endDate, notes
-        );
-        if (id > 0) {
-            Toast.makeText(this, "Medication added", Toast.LENGTH_SHORT).show();
+        boolean success;
+        if (isEditMode) {
+            success = dbHelper.updateMedication(medId, name, dosage, freq, timesJson, startDate, endDate, notes);
+        } else {
+            long id = dbHelper.addMedication(userId, name, dosage, freq, timesJson, startDate, endDate, notes);
+            success = id > 0;
+        }
+
+        if (success) {
+            Toast.makeText(this, "Medication saved", Toast.LENGTH_SHORT).show();
             finish();
         } else {
-            Toast.makeText(this, "Failed to add medication", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Failed to save medication", Toast.LENGTH_SHORT).show();
         }
     }
 
-    /**
-     * Helper to set TextView date text.
-     */
     private void updateDateText(TextView tv, int y, int m, int d) {
         tv.setText(String.format("%04d-%02d-%02d", y, m + 1, d));
     }
