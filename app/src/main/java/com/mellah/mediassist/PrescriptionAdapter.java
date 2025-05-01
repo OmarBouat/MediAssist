@@ -2,38 +2,40 @@ package com.mellah.mediassist;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 
-public class PrescriptionAdapter extends RecyclerView.Adapter<PrescriptionAdapter.ViewHolder> {
-    private final Context context;
-    private Cursor cursor;
+public class PrescriptionAdapter
+        extends RecyclerView.Adapter<PrescriptionAdapter.ViewHolder> {
 
-    public PrescriptionAdapter(Context context, Cursor cursor) {
-        this.context = context;
-        this.cursor = cursor;
+    public interface OnPrescriptionActionListener {
+        void onEdit(int rxId, String imagePath, String description);
+        void onDelete(int rxId);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        ImageView ivRx;
-        TextView tvDesc;
-        public ViewHolder(View itemView) {
-            super(itemView);
-            ivRx   = itemView.findViewById(R.id.ivPrescription);
-            tvDesc = itemView.findViewById(R.id.tvRxDesc);
-        }
+    private final Context context;
+    private Cursor cursor;
+    private final OnPrescriptionActionListener listener;
+
+    public PrescriptionAdapter(Context context,
+                               Cursor cursor,
+                               OnPrescriptionActionListener listener) {
+        this.context = context;
+        this.cursor = cursor;
+        this.listener = listener;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_prescription, parent, false);
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.item_prescription, parent, false);
         return new ViewHolder(view);
     }
 
@@ -41,32 +43,57 @@ public class PrescriptionAdapter extends RecyclerView.Adapter<PrescriptionAdapte
     public void onBindViewHolder(ViewHolder holder, int position) {
         if (!cursor.moveToPosition(position)) return;
 
-        String path = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_IMAGE_PATH));
-        String desc = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_DESCRIPTION));
+        int id = cursor.getInt(
+                cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_ID)
+        );
+        String path = cursor.getString(
+                cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_IMAGE_PATH)
+        );
+        String desc = cursor.getString(
+                cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_RX_DESCRIPTION)
+        );
 
         holder.tvDesc.setText(desc != null ? desc : "");
-
         if (path != null) {
-            Uri imageUri = Uri.parse(path); // Parse the string to a real Uri
+            Uri imageUri = Uri.parse(path);
             Glide.with(context)
                     .load(imageUri)
-                    .placeholder(R.drawable.placeholder) // Show placeholder while loading
-                    .error(R.drawable.placeholder)        // Show placeholder if loading fails
+                    .placeholder(R.drawable.placeholder)
+                    .error(R.drawable.placeholder)
                     .into(holder.ivRx);
         } else {
             holder.ivRx.setImageResource(R.drawable.placeholder);
         }
-    }
 
+        holder.btnEdit.setOnClickListener(v ->
+                listener.onEdit(id, path, desc)
+        );
+        holder.btnDelete.setOnClickListener(v ->
+                listener.onDelete(id)
+        );
+    }
 
     @Override
     public int getItemCount() {
-        return cursor == null ? 0 : cursor.getCount();
+        return (cursor == null) ? 0 : cursor.getCount();
     }
 
     public void swapCursor(Cursor newCursor) {
         if (cursor != null) cursor.close();
         cursor = newCursor;
         notifyDataSetChanged();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        ImageView ivRx;
+        TextView tvDesc;
+        Button btnEdit, btnDelete;
+        ViewHolder(View itemView) {
+            super(itemView);
+            ivRx     = itemView.findViewById(R.id.ivPrescription);
+            tvDesc   = itemView.findViewById(R.id.tvRxDesc);
+            btnEdit  = itemView.findViewById(R.id.btnEditRx);
+            btnDelete= itemView.findViewById(R.id.btnDeleteRx);
+        }
     }
 }

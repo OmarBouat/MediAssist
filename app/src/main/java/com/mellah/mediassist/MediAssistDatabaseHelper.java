@@ -353,6 +353,40 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 null, null, COLUMN_RX_DATE_ADDED + " DESC");
     }
 
+    /**
+     * Update an existing prescription.
+     * @return true if at least one row was updated
+     */
+    public boolean updatePrescription(int rxId, String imagePath, String description) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_RX_IMAGE_PATH, imagePath);
+        cv.put(COLUMN_RX_DESCRIPTION, description);
+        int rows = db.update(
+                TABLE_PRESCRIPTIONS,
+                cv,
+                COLUMN_RX_ID + " = ?",
+                new String[]{ String.valueOf(rxId) }
+        );
+        db.close();
+        return rows > 0;
+    }
+
+    /**
+     * Delete a prescription by its ID.
+     */
+    public boolean deletePrescription(int rxId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(
+                TABLE_PRESCRIPTIONS,
+                COLUMN_RX_ID + " = ?",
+                new String[]{ String.valueOf(rxId) }
+        );
+        db.close();
+        return rows > 0;
+    }
+
+
     public long addEmergencyContact(int userId, String name, String phone, String relation) {
         SQLiteDatabase db = this.getWritableDatabase();
         ContentValues cv = new ContentValues();
