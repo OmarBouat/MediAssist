@@ -95,7 +95,7 @@ public class AddAppointmentActivity extends AppCompatActivity {
         String notes = etNotes.getText().toString().trim();
         String date  = String.format("%04d-%02d-%02d", apptYear, apptMonth+1, apptDay);
         String time  = String.format("%02d:%02d", apptHour, apptMinute);
-        int userId   = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+        int userId   = getSharedPreferences("user_session", MODE_PRIVATE)
                 .getInt("currentUserId", -1);
 
         boolean success;

@@ -51,7 +51,7 @@ public class AddPrescriptionActivity extends AppCompatActivity {
                     return;
                 }
 
-                int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+                int userId = getSharedPreferences("user_session", MODE_PRIVATE)
                         .getInt("currentUserId", -1);
 
                 long id = dbHelper.addPrescription(userId, selectedImageUri.toString(), desc);

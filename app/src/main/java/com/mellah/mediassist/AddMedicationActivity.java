@@ -2,6 +2,7 @@ package com.mellah.mediassist;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -160,7 +161,7 @@ public class AddMedicationActivity extends AppCompatActivity {
         }
 
         String timesJson = new Gson().toJson(timesList);
-        SharedPreferences prefs = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE);
+        SharedPreferences prefs = getSharedPreferences("user_session", Context.MODE_PRIVATE);
         int userId = prefs.getInt("currentUserId", -1);
         if (userId < 0) {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();

@@ -59,7 +59,7 @@ public class PrescriptionsActivity extends AppCompatActivity {
 
 
     private void loadPrescriptions() {
-        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+        int userId = getSharedPreferences("user_session", MODE_PRIVATE)
                 .getInt("currentUserId", -1);
         Cursor cursor = dbHelper.getAllPrescriptions(userId);
         if (cursor != null) {

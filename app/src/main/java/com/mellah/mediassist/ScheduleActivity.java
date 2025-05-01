@@ -29,7 +29,7 @@ public class ScheduleActivity extends AppCompatActivity {
     }
 
     private void loadSchedule() {
-        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
+        int userId = getSharedPreferences("user_session", MODE_PRIVATE)
                 .getInt("currentUserId", -1);
         // Combine meds and appts cursor in adapter
         Cursor meds = dbHelper.getAllMedications(userId);
