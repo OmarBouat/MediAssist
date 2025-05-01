@@ -200,6 +200,45 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
         return id;
     }
 
+    /**
+     * Fetch a single user’s row by ID.
+     */
+    public Cursor getUser(int userId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.query(TABLE_USERS,
+                null,
+                COLUMN_USER_ID + " = ?",
+                new String[]{ String.valueOf(userId) },
+                null, null, null);
+    }
+
+    /**
+     * Update a user’s profile fields.
+     */
+    public boolean updateUser(int userId,
+                              String bloodType,
+                              int age,
+                              String gender,
+                              double weight,
+                              String allergies) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_USER_BLOOD_TYPE, bloodType);
+        cv.put(COLUMN_USER_AGE,         age);
+        cv.put(COLUMN_USER_GENDER,      gender);
+        cv.put(COLUMN_USER_WEIGHT,      weight);
+        cv.put(COLUMN_USER_ALLERGIES,   allergies);
+        int rows = db.update(
+                TABLE_USERS,
+                cv,
+                COLUMN_USER_ID + " = ?",
+                new String[]{ String.valueOf(userId) }
+        );
+        db.close();
+        return rows > 0;
+    }
+
+
     public long addMedication(int userId,
                               String name,
                               String dosage,
