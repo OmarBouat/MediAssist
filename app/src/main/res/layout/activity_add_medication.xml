@@ -26,14 +26,6 @@
             android:hint="Dosage (e.g., 10 mg)"
             android:minHeight="48dp" />
 
-        <EditText
-            android:id="@+id/etMedFrequency"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="Frequency (e.g., 3 times per day)"
-            android:minHeight="48dp" />
-
         <!-- Number of reminders per day -->
         <TextView
             android:layout_width="wrap_content"

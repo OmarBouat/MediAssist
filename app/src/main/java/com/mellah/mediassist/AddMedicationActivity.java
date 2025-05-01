@@ -25,7 +25,7 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AddMedicationActivity extends AppCompatActivity {
-    private EditText etName, etDosage, etFrequency, etNotes;
+    private EditText etName, etDosage, etNotes;
     private TextView tvStartDate, tvEndDate;
     private Button btnPickStartDate, btnPickEndDate, btnSave;
     private NumberPicker npTimesPerDay;
@@ -45,7 +45,6 @@ public class AddMedicationActivity extends AppCompatActivity {
         // Initialize views
         etName       = findViewById(R.id.etMedName);
         etDosage     = findViewById(R.id.etMedDosage);
-        etFrequency  = findViewById(R.id.etMedFrequency);
         etNotes      = findViewById(R.id.etMedNotes);
         tvStartDate  = findViewById(R.id.tvStartDate);
         tvEndDate    = findViewById(R.id.tvEndDate);
@@ -59,26 +58,29 @@ public class AddMedicationActivity extends AppCompatActivity {
         inflater     = LayoutInflater.from(this);
         calendar     = Calendar.getInstance();
 
-        final int year  = calendar.get(Calendar.YEAR);
-        final int month = calendar.get(Calendar.MONTH);
-        final int day   = calendar.get(Calendar.DAY_OF_MONTH);
+        // Set default dates
+        int year  = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int day   = calendar.get(Calendar.DAY_OF_MONTH);
         updateDateText(tvStartDate, year, month, day);
         updateDateText(tvEndDate, year, month, day);
 
         btnPickStartDate.setOnClickListener(v -> new DatePickerDialog(
                 AddMedicationActivity.this,
                 (view, y, m, d) -> updateDateText(tvStartDate, y, m, d),
-                year, month, day).show());
+                year, month, day)
+                .show());
 
         btnPickEndDate.setOnClickListener(v -> new DatePickerDialog(
                 AddMedicationActivity.this,
                 (view, y, m, d) -> updateDateText(tvEndDate, y, m, d),
-                year, month, day).show());
+                year, month, day)
+                .show());
 
         npTimesPerDay.setMinValue(1);
         npTimesPerDay.setMaxValue(10);
         npTimesPerDay.setValue(1);
-
+        generateTimePickers(1);
         npTimesPerDay.setOnValueChangedListener((picker, oldVal, newVal) ->
                 generateTimePickers(newVal)
         );
@@ -89,17 +91,15 @@ public class AddMedicationActivity extends AppCompatActivity {
         if (intent != null && intent.hasExtra("medId")) {
             isEditMode = true;
             medId = intent.getIntExtra("medId", -1);
-            String name = intent.getStringExtra("name");
-            String dosage = intent.getStringExtra("dosage");
-            String frequency = intent.getStringExtra("frequency");
+            String name      = intent.getStringExtra("name");
+            String dosage    = intent.getStringExtra("dosage");
             String timesJson = intent.getStringExtra("timesJson");
             String startDate = intent.getStringExtra("startDate");
-            String endDate = intent.getStringExtra("endDate");
-            String notes = intent.getStringExtra("notes");
+            String endDate   = intent.getStringExtra("endDate");
+            String notes     = intent.getStringExtra("notes");
 
             etName.setText(name);
             etDosage.setText(dosage);
-            etFrequency.setText(frequency);
             tvStartDate.setText(startDate);
             tvEndDate.setText(endDate);
             etNotes.setText(notes);
@@ -112,8 +112,6 @@ public class AddMedicationActivity extends AppCompatActivity {
                 TextView tv = row.findViewById(R.id.tvTimeLabel);
                 tv.setText(timesList.get(i));
             }
-        } else {
-            generateTimePickers(1);
         }
     }
 
@@ -122,13 +120,13 @@ public class AddMedicationActivity extends AppCompatActivity {
         for (int i = 0; i < count; i++) {
             View timeView = inflater.inflate(R.layout.time_picker_item, llTimePickers, false);
             TextView tvTimeLabel = timeView.findViewById(R.id.tvTimeLabel);
-            Button btnPickTime  = timeView.findViewById(R.id.btnPickTime);
+            Button btnPickTime   = timeView.findViewById(R.id.btnPickTime);
             btnPickTime.setOnClickListener(v -> {
                 int h = calendar.get(Calendar.HOUR_OF_DAY);
                 int m = calendar.get(Calendar.MINUTE);
                 new TimePickerDialog(
                         AddMedicationActivity.this,
-                        (TimePicker view, int hourOfDay, int minute) ->
+                        (view, hourOfDay, minute) ->
                                 tvTimeLabel.setText(String.format("%02d:%02d", hourOfDay, minute)),
                         h, m, true
                 ).show();
@@ -140,13 +138,12 @@ public class AddMedicationActivity extends AppCompatActivity {
     private void saveMedication() {
         String name      = etName.getText().toString().trim();
         String dosage    = etDosage.getText().toString().trim();
-        String freq      = etFrequency.getText().toString().trim();
         String startDate = tvStartDate.getText().toString();
         String endDate   = tvEndDate.getText().toString();
         String notes     = etNotes.getText().toString().trim();
 
-        if (name.isEmpty() || dosage.isEmpty() || freq.isEmpty()) {
-            Toast.makeText(this, "Name, dosage, and frequency are required", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || dosage.isEmpty()) {
+            Toast.makeText(this, "Name and dosage are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -172,9 +169,9 @@ public class AddMedicationActivity extends AppCompatActivity {
 
         boolean success;
         if (isEditMode) {
-            success = dbHelper.updateMedication(medId, name, dosage, freq, timesJson, startDate, endDate, notes);
+            success = dbHelper.updateMedication(medId, name, dosage, "", timesJson, startDate, endDate, notes);
         } else {
-            long id = dbHelper.addMedication(userId, name, dosage, freq, timesJson, startDate, endDate, notes);
+            long id = dbHelper.addMedication(userId, name, dosage, "", timesJson, startDate, endDate, notes);
             success = id > 0;
         }
 

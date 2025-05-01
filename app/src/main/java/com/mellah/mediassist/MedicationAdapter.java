@@ -18,7 +18,7 @@ import java.util.List;
 
 public class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.ViewHolder> {
     public interface OnMedicationActionListener {
-        void onEdit(int medId, String name, String dosage, String freq,
+        void onEdit(int medId, String name, String dosage,
                     String timesJson, String startDate, String endDate, String notes);
         void onDelete(int medId);
     }
@@ -51,8 +51,6 @@ public class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.Vi
                 MediAssistDatabaseHelper.COLUMN_MED_NAME));
         String dosage = cursor.getString(cursor.getColumnIndexOrThrow(
                 MediAssistDatabaseHelper.COLUMN_MED_DOSAGE));
-        String freq = cursor.getString(cursor.getColumnIndexOrThrow(
-                MediAssistDatabaseHelper.COLUMN_MED_FREQUENCY));
         String timesJson = cursor.getString(cursor.getColumnIndexOrThrow(
                 MediAssistDatabaseHelper.COLUMN_MED_TIMES_JSON));
         String startDate = cursor.getString(cursor.getColumnIndexOrThrow(
@@ -68,11 +66,10 @@ public class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.Vi
 
         holder.tvName.setText(name);
         holder.tvDosage.setText(dosage);
-        holder.tvFrequency.setText(freq);
         holder.tvTimes.setText(timesDisplay);
 
         holder.btnEdit.setOnClickListener(v ->
-                listener.onEdit(id, name, dosage, freq, timesJson, startDate, endDate, notes)
+                listener.onEdit(id, name, dosage, timesJson, startDate, endDate, notes)
         );
         holder.btnDelete.setOnClickListener(v ->
                 listener.onDelete(id)
@@ -85,14 +82,13 @@ public class MedicationAdapter extends RecyclerView.Adapter<MedicationAdapter.Vi
     }
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvDosage, tvFrequency, tvTimes;
+        TextView tvName, tvDosage, tvTimes;
         Button btnEdit, btnDelete;
 
         ViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tvMedName);
             tvDosage = itemView.findViewById(R.id.tvMedDosage);
-            tvFrequency = itemView.findViewById(R.id.tvMedFrequency);
             tvTimes = itemView.findViewById(R.id.tvMedTimes);
             btnEdit = itemView.findViewById(R.id.btnEditMed);
             btnDelete = itemView.findViewById(R.id.btnDeleteMed);

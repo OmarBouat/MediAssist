@@ -51,13 +51,12 @@ public class MedicationsActivity extends AppCompatActivity
     }
 
     @Override
-    public void onEdit(int medId, String name, String dosage, String freq,
+    public void onEdit(int medId, String name, String dosage,
                        String timesJson, String startDate, String endDate, String notes) {
         Intent i = new Intent(this, AddMedicationActivity.class);
         i.putExtra("medId", medId);
         i.putExtra("name", name);
         i.putExtra("dosage", dosage);
-        i.putExtra("frequency", freq);
         i.putExtra("timesJson", timesJson);
         i.putExtra("startDate", startDate);
         i.putExtra("endDate", endDate);
