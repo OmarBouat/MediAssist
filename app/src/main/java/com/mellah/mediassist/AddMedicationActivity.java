@@ -1,11 +1,16 @@
 package com.mellah.mediassist;
 
-import android.app.DatePickerDialog;
+import android.annotation.SuppressLint;
+import android.app.AlarmManager;
+import android.app.AlarmManager.AlarmClockInfo;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -33,7 +38,6 @@ public class AddMedicationActivity extends AppCompatActivity {
     private LinearLayout llTimePickers;
     private MediAssistDatabaseHelper dbHelper;
     private LayoutInflater inflater;
-    private Calendar calendar;
 
     private boolean isEditMode = false;
     private int medId = -1;
@@ -43,7 +47,6 @@ public class AddMedicationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_medication);
 
-        // Initialize views
         etName       = findViewById(R.id.etMedName);
         etDosage     = findViewById(R.id.etMedDosage);
         etNotes      = findViewById(R.id.etMedNotes);
@@ -57,26 +60,28 @@ public class AddMedicationActivity extends AppCompatActivity {
 
         dbHelper     = new MediAssistDatabaseHelper(this);
         inflater     = LayoutInflater.from(this);
-        calendar     = Calendar.getInstance();
 
-        // Set default dates
-        int year  = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int day   = calendar.get(Calendar.DAY_OF_MONTH);
+        Calendar cal = Calendar.getInstance();
+        int year  = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH);
+        int day   = cal.get(Calendar.DAY_OF_MONTH);
         updateDateText(tvStartDate, year, month, day);
-        updateDateText(tvEndDate, year, month, day);
+        updateDateText(tvEndDate,   year, month, day);
 
-        btnPickStartDate.setOnClickListener(v -> new DatePickerDialog(
-                AddMedicationActivity.this,
-                (view, y, m, d) -> updateDateText(tvStartDate, y, m, d),
-                year, month, day)
-                .show());
-
-        btnPickEndDate.setOnClickListener(v -> new DatePickerDialog(
-                AddMedicationActivity.this,
-                (view, y, m, d) -> updateDateText(tvEndDate, y, m, d),
-                year, month, day)
-                .show());
+        btnPickStartDate.setOnClickListener(v ->
+                new android.app.DatePickerDialog(
+                        this,
+                        (view, y, m, d) -> updateDateText(tvStartDate, y, m, d),
+                        year, month, day
+                ).show()
+        );
+        btnPickEndDate.setOnClickListener(v ->
+                new android.app.DatePickerDialog(
+                        this,
+                        (view, y, m, d) -> updateDateText(tvEndDate, y, m, d),
+                        year, month, day
+                ).show()
+        );
 
         npTimesPerDay.setMinValue(1);
         npTimesPerDay.setMaxValue(10);
@@ -88,24 +93,19 @@ public class AddMedicationActivity extends AppCompatActivity {
 
         btnSave.setOnClickListener(v -> saveMedication());
 
+        // Check for edit mode
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("medId")) {
             isEditMode = true;
             medId = intent.getIntExtra("medId", -1);
-            String name      = intent.getStringExtra("name");
-            String dosage    = intent.getStringExtra("dosage");
-            String timesJson = intent.getStringExtra("timesJson");
-            String startDate = intent.getStringExtra("startDate");
-            String endDate   = intent.getStringExtra("endDate");
-            String notes     = intent.getStringExtra("notes");
+            etName.setText(intent.getStringExtra("name"));
+            etDosage.setText(intent.getStringExtra("dosage"));
+            tvStartDate.setText(intent.getStringExtra("startDate"));
+            tvEndDate.setText(intent.getStringExtra("endDate"));
+            etNotes.setText(intent.getStringExtra("notes"));
 
-            etName.setText(name);
-            etDosage.setText(dosage);
-            tvStartDate.setText(startDate);
-            tvEndDate.setText(endDate);
-            etNotes.setText(notes);
-
-            List<String> timesList = new Gson().fromJson(timesJson, List.class);
+            List<String> timesList = new Gson()
+                    .fromJson(intent.getStringExtra("timesJson"), List.class);
             npTimesPerDay.setValue(timesList.size());
             generateTimePickers(timesList.size());
             for (int i = 0; i < timesList.size(); i++) {
@@ -123,13 +123,13 @@ public class AddMedicationActivity extends AppCompatActivity {
             TextView tvTimeLabel = timeView.findViewById(R.id.tvTimeLabel);
             Button btnPickTime   = timeView.findViewById(R.id.btnPickTime);
             btnPickTime.setOnClickListener(v -> {
-                int h = calendar.get(Calendar.HOUR_OF_DAY);
-                int m = calendar.get(Calendar.MINUTE);
+                Calendar now = Calendar.getInstance();
                 new TimePickerDialog(
-                        AddMedicationActivity.this,
-                        (view, hourOfDay, minute) ->
-                                tvTimeLabel.setText(String.format("%02d:%02d", hourOfDay, minute)),
-                        h, m, true
+                        this,
+                        (view, h, m) -> tvTimeLabel.setText(String.format("%02d:%02d", h, m)),
+                        now.get(Calendar.HOUR_OF_DAY),
+                        now.get(Calendar.MINUTE),
+                        true
                 ).show();
             });
             llTimePickers.addView(timeView);
@@ -154,33 +154,98 @@ public class AddMedicationActivity extends AppCompatActivity {
             TextView tv = row.findViewById(R.id.tvTimeLabel);
             String t = tv.getText().toString();
             if ("--:--".equals(t)) {
-                Toast.makeText(this, "Please pick all reminder times", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Please pick all times", Toast.LENGTH_SHORT).show();
                 return;
             }
             timesList.add(t);
         }
-
         String timesJson = new Gson().toJson(timesList);
-        SharedPreferences prefs = getSharedPreferences("user_session", Context.MODE_PRIVATE);
+
+        SharedPreferences prefs =
+                getSharedPreferences("user_session", Context.MODE_PRIVATE);
         int userId = prefs.getInt("currentUserId", -1);
         if (userId < 0) {
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        int scheduleId;
         boolean success;
         if (isEditMode) {
-            success = dbHelper.updateMedication(medId, name, dosage, "", timesJson, startDate, endDate, notes);
+            success = dbHelper.updateMedication(
+                    medId, name, dosage, "", timesJson, startDate, endDate, notes
+            );
+            scheduleId = medId;
         } else {
-            long id = dbHelper.addMedication(userId, name, dosage, "", timesJson, startDate, endDate, notes);
+            long id = dbHelper.addMedication(
+                    userId, name, dosage, "", timesJson, startDate, endDate, notes
+            );
             success = id > 0;
+            scheduleId = (int) id;
         }
 
         if (success) {
             Toast.makeText(this, "Medication saved", Toast.LENGTH_SHORT).show();
+            scheduleMedicationAlarms(scheduleId, name, timesList);
             finish();
         } else {
-            Toast.makeText(this, "Failed to save medication", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Failed to save", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @SuppressLint("ScheduleExactAlarm")
+    private void scheduleMedicationAlarms(int scheduleId,
+                                          String label,
+                                          List<String> timesList) {
+        AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (!alarmManager.canScheduleExactAlarms()) {
+                Intent intent = new Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM);
+                startActivity(intent);
+                return; // Wait for user to approve and come back
+            }
+        }
+
+        for (int i = 0; i < timesList.size(); i++) {
+            String t = timesList.get(i);
+            String[] parts = t.split(":");
+            int hour   = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+
+            Calendar cal = Calendar.getInstance();
+            cal.set(Calendar.HOUR_OF_DAY, hour);
+            cal.set(Calendar.MINUTE, minute);
+            cal.set(Calendar.SECOND, 0);
+            if (cal.getTimeInMillis() < System.currentTimeMillis()) {
+                cal.add(Calendar.DAY_OF_MONTH, 1);
+            }
+            long triggerMillis = cal.getTimeInMillis();
+
+            // Fire intent
+            Intent fireIntent = new Intent(this, AlarmReceiver.class);
+            fireIntent.putExtra("itemId",    scheduleId);
+            fireIntent.putExtra("itemType", "MEDICATION");
+            fireIntent.putExtra("label",      label);
+            fireIntent.putExtra("time",       t);
+            PendingIntent firePi = PendingIntent.getBroadcast(
+                    this,
+                    scheduleId * 100 + i,
+                    fireIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            // Show-upcoming intent
+            Intent showIntent = new Intent(this, ScheduleActivity.class);
+            PendingIntent showPi = PendingIntent.getActivity(
+                    this,
+                    scheduleId,
+                    showIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+            );
+
+            AlarmClockInfo acInfo =
+                    new AlarmClockInfo(triggerMillis, showPi);
+            alarmManager.setAlarmClock(acInfo, firePi);
         }
     }
 
