@@ -406,4 +406,39 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 null, null, COLUMN_EC_NAME + " ASC");
 
     }
+
+    /**
+     * Update an existing emergency contact.
+     * @return true if at least one row was updated
+     */
+    public boolean updateEmergencyContact(int ecId, String name, String phone, String relation) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_EC_NAME, name);
+        cv.put(COLUMN_EC_PHONE, phone);
+        cv.put(COLUMN_EC_RELATION, relation);
+        int rows = db.update(
+                TABLE_EMERGENCY_CONTACTS,
+                cv,
+                COLUMN_EC_ID + " = ?",
+                new String[]{ String.valueOf(ecId) }
+        );
+        db.close();
+        return rows > 0;
+    }
+
+    /**
+     * Delete an emergency contact by its ID.
+     */
+    public boolean deleteEmergencyContact(int ecId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        int rows = db.delete(
+                TABLE_EMERGENCY_CONTACTS,
+                COLUMN_EC_ID + " = ?",
+                new String[]{ String.valueOf(ecId) }
+        );
+        db.close();
+        return rows > 0;
+    }
+
 }

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="country_names">
+        <item>Tunisia</item>
+        <item>United States</item>
+        <item>United Kingdom</item>
+        <item>France</item>
+        <item>Germany</item>
+    </string-array>
+
+    <string-array name="country_codes">
+        <item>+216</item>
+        <item>+1</item>
+        <item>+44</item>
+        <item>+33</item>
+        <item>+49</item>
+        <!-- BIG NOTE!!: must match order of country_names -->
+    </string-array>
+</resources>

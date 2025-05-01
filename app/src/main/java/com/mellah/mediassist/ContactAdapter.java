@@ -12,43 +12,55 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHolder> {
-    private final Context context;
-    private Cursor cursor;
 
-    public ContactAdapter(Context context, Cursor cursor) {
-        this.context = context;
-        this.cursor = cursor;
+    public interface OnContactActionListener {
+        void onEdit(int contactId, String name, String phone, String relation);
+        void onDelete(int contactId);
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView tvName, tvPhone;
-        ImageButton btnCall;
-        public ViewHolder(View itemView) {
-            super(itemView);
-            tvName  = itemView.findViewById(R.id.tvContactName);
-            tvPhone = itemView.findViewById(R.id.tvContactPhone);
-            btnCall = itemView.findViewById(R.id.btnCall);
-        }
+    private final Context context;
+    private Cursor cursor;
+    private final OnContactActionListener listener;
+
+    public ContactAdapter(Context context, Cursor cursor, OnContactActionListener listener) {
+        this.context = context;
+        this.cursor = cursor;
+        this.listener = listener;
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_contact, parent, false);
+        View view = LayoutInflater.from(context)
+                .inflate(R.layout.item_contact, parent, false);
         return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        if (!cursor.moveToPosition(position)) return;
+    public void onBindViewHolder(ViewHolder holder, int pos) {
+        if (!cursor.moveToPosition(pos)) return;
+
+        int id       = cursor.getInt(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_EC_ID));
         String name  = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_EC_NAME));
         String phone = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_EC_PHONE));
+        String rel   = cursor.getString(cursor.getColumnIndexOrThrow(MediAssistDatabaseHelper.COLUMN_EC_RELATION));
+
         holder.tvName.setText(name);
         holder.tvPhone.setText(phone);
+
+        // Call
         holder.btnCall.setOnClickListener(v -> {
             Intent callIntent = new Intent(Intent.ACTION_DIAL);
             callIntent.setData(Uri.parse("tel:" + phone));
             context.startActivity(callIntent);
         });
+        // Edit
+        holder.btnEdit.setOnClickListener(v ->
+                listener.onEdit(id, name, phone, rel)
+        );
+        // Delete
+        holder.btnDelete.setOnClickListener(v ->
+                listener.onDelete(id)
+        );
     }
 
     @Override
@@ -60,5 +72,18 @@ public class ContactAdapter extends RecyclerView.Adapter<ContactAdapter.ViewHold
         if (cursor != null) cursor.close();
         cursor = newCursor;
         notifyDataSetChanged();
+    }
+
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView tvName, tvPhone;
+        ImageButton btnCall, btnEdit, btnDelete;
+        ViewHolder(View itemView) {
+            super(itemView);
+            tvName    = itemView.findViewById(R.id.tvContactName);
+            tvPhone   = itemView.findViewById(R.id.tvContactPhone);
+            btnCall   = itemView.findViewById(R.id.btnCall);
+            btnEdit   = itemView.findViewById(R.id.btnEditContact);
+            btnDelete = itemView.findViewById(R.id.btnDeleteContact);
+        }
     }
 }

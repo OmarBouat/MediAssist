@@ -8,6 +8,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
+    <!-- Name + Phone -->
     <LinearLayout
         android:orientation="vertical"
         android:layout_weight="1"
@@ -28,10 +29,31 @@
             android:textSize="14sp" />
     </LinearLayout>
 
+    <!-- Call button -->
     <ImageButton
         android:id="@+id/btnCall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:contentDescription="Call"
-        app:srcCompat="@drawable/ic_call" />
+        app:srcCompat="@drawable/ic_call"
+        android:layout_marginEnd="8dp"/>
+
+    <!-- Edit & Delete -->
+    <ImageButton
+        android:id="@+id/btnEditContact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Edit"
+        android:layout_marginEnd="8dp"/>
+    <!-- app:srcCompat="@drawable/ic_edit" -->
+
+
+    <ImageButton
+        android:id="@+id/btnDeleteContact"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="Delete"/>
+        <!--app:srcCompat="@drawable/ic_delete" -->
+
+
 </LinearLayout>
