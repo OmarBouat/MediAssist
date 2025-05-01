@@ -2,13 +2,17 @@ package com.mellah.mediassist;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.util.Pair;
+import android.view.LayoutInflater;
+import android.view.View;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.NumberPicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,170 +24,137 @@ import java.util.Calendar;
 import java.util.List;
 
 public class AddMedicationActivity extends AppCompatActivity {
-    private EditText etName, etDosage, etNotes;
+    private EditText etName, etDosage, etFrequency, etNotes;
     private TextView tvStartDate, tvEndDate;
     private Button btnPickStartDate, btnPickEndDate, btnSave;
+    private NumberPicker npTimesPerDay;
+    private LinearLayout llTimePickers;
     private MediAssistDatabaseHelper dbHelper;
-    private LinearLayout timePickersLayout;
-    private NumberPicker frequencyPicker;
-
-    private int startYear, startMonth, startDay;
-    private int endYear, endMonth, endDay;
-    private List<Pair<Integer, Integer>> medicationTimes;
+    private LayoutInflater inflater;
+    private Calendar calendar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_add_medication);
 
-        // Initialize UI elements
-        etName = findViewById(R.id.etMedName);
-        etDosage = findViewById(R.id.etMedDosage);
-        etNotes = findViewById(R.id.etMedNotes);
-        tvStartDate = findViewById(R.id.tvStartDate);
-        tvEndDate = findViewById(R.id.tvEndDate);
+        // Initialize views
+        etName       = findViewById(R.id.etMedName);
+        etDosage     = findViewById(R.id.etMedDosage);
+        etFrequency  = findViewById(R.id.etMedFrequency);
+        etNotes      = findViewById(R.id.etMedNotes);
+        tvStartDate  = findViewById(R.id.tvStartDate);
+        tvEndDate    = findViewById(R.id.tvEndDate);
         btnPickStartDate = findViewById(R.id.btnPickStartDate);
-        btnPickEndDate = findViewById(R.id.btnPickEndDate);
-        btnSave = findViewById(R.id.btnSaveMed);
-        timePickersLayout = findViewById(R.id.timePickersLayout);
-        frequencyPicker = findViewById(R.id.frequencyPicker);
+        btnPickEndDate   = findViewById(R.id.btnPickEndDate);
+        npTimesPerDay = findViewById(R.id.npTimesPerDay);
+        llTimePickers = findViewById(R.id.llTimePickers);
+        btnSave      = findViewById(R.id.btnSaveMed);
 
-        // Initialize member variables
-        medicationTimes = new ArrayList<>();
+        dbHelper     = new MediAssistDatabaseHelper(this);
+        inflater     = LayoutInflater.from(this);
+        calendar     = Calendar.getInstance();
 
-        // Set up the NumberPicker for frequency
-        frequencyPicker.setMinValue(1);
-        frequencyPicker.setMaxValue(10);
+        // Setup Date Pickers
+        final int year  = calendar.get(Calendar.YEAR);
+        final int month = calendar.get(Calendar.MONTH);
+        final int day   = calendar.get(Calendar.DAY_OF_MONTH);
+        updateDateText(tvStartDate, year, month, day);
+        updateDateText(tvEndDate, year, month, day);
 
-        // Initialize the database helper
-        dbHelper = new MediAssistDatabaseHelper(this);
+        btnPickStartDate.setOnClickListener(v -> new DatePickerDialog(
+                AddMedicationActivity.this,
+                (view, y, m, d) -> updateDateText(tvStartDate, y, m, d),
+                year, month, day).show());
 
-        // Initialize current date values
-        Calendar cal = Calendar.getInstance();
-        startYear = endYear = cal.get(Calendar.YEAR);
-        startMonth = endMonth = cal.get(Calendar.MONTH);
-        startDay = endDay = cal.get(Calendar.DAY_OF_MONTH);
-        updateStartDateDisplay();
-        updateEndDateDisplay();
+        btnPickEndDate.setOnClickListener(v -> new DatePickerDialog(
+                AddMedicationActivity.this,
+                (view, y, m, d) -> updateDateText(tvEndDate, y, m, d),
+                year, month, day).show());
 
-        // Set up DatePicker dialogs
-        btnPickStartDate.setOnClickListener(v -> {
-            DatePickerDialog dpd = new DatePickerDialog(
-                    AddMedicationActivity.this,
-                    (view, year, month, dayOfMonth) -> {
-                        startYear = year;
-                        startMonth = month;
-                        startDay = dayOfMonth;
-                        updateStartDateDisplay();
-                    }, startYear, startMonth, startDay);
-            dpd.show();
-        });
+        // Setup NumberPicker
+        npTimesPerDay.setMinValue(1);
+        npTimesPerDay.setMaxValue(10);
+        npTimesPerDay.setValue(1);
+        generateTimePickers(1);
 
-        btnPickEndDate.setOnClickListener(v -> {
-            DatePickerDialog dpd = new DatePickerDialog(
-                    AddMedicationActivity.this,
-                    (view, year, month, dayOfMonth) -> {
-                        endYear = year;
-                        endMonth = month;
-                        endDay = dayOfMonth;
-                        updateEndDateDisplay();
-                    }, endYear, endMonth, endDay);
-            dpd.show();
-        });
+        npTimesPerDay.setOnValueChangedListener((picker, oldVal, newVal) ->
+                generateTimePickers(newVal)
+        );
 
-        // Initialize time pickers based on the initial frequency
-        updateTimePickers();
-
-        // Set listener for frequency changes
-        frequencyPicker.setOnValueChangedListener((picker, oldVal, newVal) -> updateTimePickers());
-
-        // Set up the "Save" button
+        // Save button
         btnSave.setOnClickListener(v -> saveMedication());
     }
 
-    private void updateTimePickers() {
-        int frequency = frequencyPicker.getValue();
+    /**
+     * Dynamically generates time-picker rows based on count.
+     */
+    private void generateTimePickers(int count) {
+        llTimePickers.removeAllViews();
+        for (int i = 0; i < count; i++) {
+            View timeView = inflater.inflate(R.layout.time_picker_item, llTimePickers, false);
+            TextView tvTimeLabel = timeView.findViewById(R.id.tvTimeLabel);
+            Button btnPickTime  = timeView.findViewById(R.id.btnPickTime);
 
-        // Remove existing time pickers
-        timePickersLayout.removeAllViews();
-        medicationTimes.clear();
+            btnPickTime.setOnClickListener(v -> {
+                int h = calendar.get(Calendar.HOUR_OF_DAY);
+                int m = calendar.get(Calendar.MINUTE);
+                new TimePickerDialog(
+                        AddMedicationActivity.this,
+                        (TimePicker view, int hourOfDay, int minute) ->
+                                tvTimeLabel.setText(String.format("%02d:%02d", hourOfDay, minute)),
+                        h, m, true
+                ).show();
+            });
 
-        // Add new time pickers based on the frequency
-        for (int i = 0; i < frequency; i++) {
-            addTimePicker(i);
+            llTimePickers.addView(timeView);
         }
     }
 
-    // Method to add a time picker dynamically
-    private void addTimePicker(int index) {
-        final TextView timeView = new TextView(this);
-
-        // Calculate default time based on index
-        int defaultHour = 8 + (index * 4); // 8:00, 12:00, 16:00, etc.
-        if (defaultHour >= 24) {
-            defaultHour -= 24;
-        }
-        final int finalDefaultHour = defaultHour;
-        int defaultMinute = 0;
-
-        timeView.setText(String.format("%02d:%02d", finalDefaultHour, defaultMinute));
-        timeView.setTextSize(18);
-        timeView.setPadding(8, 8, 8, 8);
-        timeView.setClickable(true);
-        medicationTimes.add(new Pair<>(finalDefaultHour, defaultMinute));
-        timeView.setOnClickListener(v -> {
-            TimePickerDialog tpd = new TimePickerDialog(
-                    AddMedicationActivity.this,
-                    (view, hourOfDay, minute) -> {
-                        timeView.setText(String.format("%02d:%02d", hourOfDay, minute));
-                        medicationTimes.set(index, new Pair<>(hourOfDay, minute));
-                    }, finalDefaultHour, defaultMinute, true);
-            tpd.show();
-        });
-        timePickersLayout.addView(timeView);
-    }
-
-    // Method to handle saving the medication
+    /**
+     * Reads inputs, validates, serializes times, and saves to database.
+     */
     private void saveMedication() {
-        String name = etName.getText().toString().trim();
-        String dosage = etDosage.getText().toString().trim();
-        String notes = etNotes.getText().toString().trim();
+        String name      = etName.getText().toString().trim();
+        String dosage    = etDosage.getText().toString().trim();
+        String freq      = etFrequency.getText().toString().trim();
+        String startDate = tvStartDate.getText().toString();
+        String endDate   = tvEndDate.getText().toString();
+        String notes     = etNotes.getText().toString().trim();
 
-        // Basic input validation
-        if (name.isEmpty() || dosage.isEmpty()) {
-            Toast.makeText(this, "Fill name, dosage and frequency", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || dosage.isEmpty() || freq.isEmpty()) {
+            Toast.makeText(this, "Name, dosage, and frequency are required", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Get the selected frequency from the NumberPicker
-        int frequency = frequencyPicker.getValue();
+        // Collect times
+        List<String> timesList = new ArrayList<>();
+        for (int i = 0; i < llTimePickers.getChildCount(); i++) {
+            View row = llTimePickers.getChildAt(i);
+            TextView tv = row.findViewById(R.id.tvTimeLabel);
+            String t = tv.getText().toString();
+            if ("--:--".equals(t)) {
+                Toast.makeText(this, "Please pick all reminder times", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            timesList.add(t);
+        }
 
-        // Validate if the number of time is equal to the frequency
-        if (frequency != medicationTimes.size()) {
-            Toast.makeText(this, "Add all the time please", Toast.LENGTH_SHORT).show();
+        // Serialize to JSON
+        String timesJson = new Gson().toJson(timesList);
+
+        // Retrieve current user
+        SharedPreferences prefs = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE);
+        int userId = prefs.getInt("currentUserId", -1);
+        if (userId < 0) {
+            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Format start and end dates
-        String startDate = String.format("%04d-%02d-%02d", startYear, startMonth + 1, startDay);
-        String endDate = String.format("%04d-%02d-%02d", endYear, endMonth + 1, endDay);
-
-        // Get the user ID from SharedPreferences
-        int userId = getSharedPreferences("MediAssistPrefs", MODE_PRIVATE)
-                .getInt("currentUserId", -1);
-
-        // Convert the times from Pair<Integer, Integer> to List<String>
-        List<String> times = new ArrayList<>();
-        for (Pair<Integer, Integer> time : medicationTimes) {
-            times.add(String.format("%02d:%02d", time.first, time.second));
-        }
-
-        // Save the medication to the database
-        Gson gson = new Gson();
-        String timesJson = gson.toJson(times);
-
-        // Save the medication to the database
-        long id = dbHelper.addMedication(userId, name, dosage, String.valueOf(frequency), timesJson, startDate, endDate, notes);
+        long id = dbHelper.addMedication(
+                userId, name, dosage, freq, timesJson,
+                startDate, endDate, notes
+        );
         if (id > 0) {
             Toast.makeText(this, "Medication added", Toast.LENGTH_SHORT).show();
             finish();
@@ -192,12 +163,10 @@ public class AddMedicationActivity extends AppCompatActivity {
         }
     }
 
-    // Helper methods to update date displays
-    private void updateStartDateDisplay() {
-        tvStartDate.setText(String.format("%04d-%02d-%02d", startYear, startMonth + 1, startDay));
-    }
-
-    private void updateEndDateDisplay() {
-        tvEndDate.setText(String.format("%04d-%02d-%02d", endYear, endMonth + 1, endDay));
+    /**
+     * Helper to set TextView date text.
+     */
+    private void updateDateText(TextView tv, int y, int m, int d) {
+        tv.setText(String.format("%04d-%02d-%02d", y, m + 1, d));
     }
 }

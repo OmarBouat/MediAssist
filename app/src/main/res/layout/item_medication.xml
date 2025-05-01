@@ -10,17 +10,28 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="16sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:paddingBottom="4dp" />
 
     <TextView
         android:id="@+id/tvMedDosage"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
 
     <TextView
-        android:id="@+id/tvMedTime"
+        android:id="@+id/tvMedFrequency"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="14sp" />
+        android:textSize="14sp"
+        android:paddingBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvMedTimes"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="14sp"
+        android:textColor="#555"
+        android:paddingBottom="4dp" />
 </LinearLayout>
