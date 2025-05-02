@@ -8,26 +8,42 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String PREFS_NAME     = "MediAssistPrefs";
+    private static final String KEY_FIRST_RUN  = "isFirstRun";
+    private static final String USER_SESSION   = "user_session";
+    private static final String KEY_LOGGED_IN  = "isLoggedIn";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // You need to create this layout file
+        setContentView(R.layout.activity_main);
 
-        // Check if the user is already logged in
-        SharedPreferences sharedPreferences = getSharedPreferences("user_session", Context.MODE_PRIVATE);
-        boolean isLoggedIn = sharedPreferences.getBoolean("isLoggedIn", false);
+        // 1) First-run check
+        SharedPreferences appPrefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        boolean isFirstRun = appPrefs.getBoolean(KEY_FIRST_RUN, true);
+        if (isFirstRun) {
+            // mark that we've shown the welcome screen
+            appPrefs.edit()
+                    .putBoolean(KEY_FIRST_RUN, true) // TODO: CHANGE TO FALSE!!!!!!!!!!
+                    .apply();
+
+            // launch the welcome/setup activity
+            startActivity(new Intent(this, WelcomeSetupActivity.class));
+            finish();
+            return;
+        }
+
+        // 2) Normal login flow
+        SharedPreferences userPrefs = getSharedPreferences(USER_SESSION, Context.MODE_PRIVATE);
+        boolean isLoggedIn = userPrefs.getBoolean(KEY_LOGGED_IN, false);
 
         if (isLoggedIn) {
-            // User is logged in, go to home screen
-            Intent intent = new Intent(this, HomeActivity.class);
-            startActivity(intent);
-            finish();
+            // already logged in → Home
+            startActivity(new Intent(this, HomeActivity.class));
         } else {
-            // User is not logged in, go to login screen
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
+            // not logged in → Login
+            startActivity(new Intent(this, LoginActivity.class));
         }
+        finish();
     }
 }
