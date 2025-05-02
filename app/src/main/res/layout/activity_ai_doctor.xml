@@ -5,16 +5,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Top app bar -->
+    <!-- Top bar -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbar_ai"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="?attr/colorPrimary"
         android:title="MediDoc AI"
+        android:background="?attr/colorPrimary"
         android:titleTextColor="@android:color/white"/>
 
-    <!-- Chat list: now fills the space between toolbar and input bar -->
+    <!-- Now fills the space below the toolbar -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvChat"
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
         android:layout_marginBottom="56dp"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
-    <!-- Input bar at bottom -->
+    <!-- Input bar pinned at bottom -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"

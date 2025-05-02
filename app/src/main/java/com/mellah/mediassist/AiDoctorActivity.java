@@ -20,36 +20,38 @@ import java.util.List;
 import okhttp3.*;
 
 /**
- * AI Doctor chat UI backed by Google's Generative Language (Gemini) API.
+ * AI Doctor chat UI backed by Gemini 2.0 Flash via the Vertex AI generateContent API.
  */
 public class AiDoctorActivity extends AppCompatActivity {
-    private static final String GEMINI_API_KEY = BuildConfig.GEMINI_API_KEY;
+    private static final String GEMINI_API_KEY  = BuildConfig.GEMINI_API_KEY;
     private static final String GEMINI_ENDPOINT =
-            "https://generativelanguage.googleapis.com/v1beta2/"
-                    + "models/chat-bison-001:generateMessage?key="
+            "https://generativelanguage.googleapis.com/v1beta/models/"
+                    + "gemini-2.0-flash:generateContent?key="
                     + GEMINI_API_KEY;
 
-    private RecyclerView rvChat;
-    private EditText    etMessage;
-    private Button      btnSend;
-    private ChatAdapter adapter;
+    private RecyclerView       rvChat;
+    private EditText           etMessage;
+    private Button             btnSend;
+    private ChatAdapter        adapter;
     private final List<ChatMessage> messages = new ArrayList<>();
-
-    private final OkHttpClient http = new OkHttpClient();
+    private final OkHttpClient http     = new OkHttpClient();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ai_doctor);
 
+        // 1) bind views
         rvChat    = findViewById(R.id.rvChat);
         etMessage = findViewById(R.id.etMessage);
         btnSend   = findViewById(R.id.btnSend);
 
+        // 2) setup RecyclerView
         adapter = new ChatAdapter(messages);
         rvChat.setLayoutManager(new LinearLayoutManager(this));
         rvChat.setAdapter(adapter);
 
+        // 3) send on click
         btnSend.setOnClickListener(v -> {
             String text = etMessage.getText().toString().trim();
             if (text.isEmpty()) return;
@@ -59,38 +61,31 @@ public class AiDoctorActivity extends AppCompatActivity {
         });
     }
 
+    /** Add a message to the list and scroll to bottom */
     private void appendMessage(String txt, boolean isUser) {
         messages.add(new ChatMessage(txt, isUser));
         adapter.notifyItemInserted(messages.size() - 1);
         rvChat.scrollToPosition(messages.size() - 1);
     }
 
+    /** Build the request and parse the nested content.text correctly */
     private void callGemini(String userText) {
-        // Build messages array exactly as the REST quickstart shows:
-        JsonArray msgs = new JsonArray();
-        // system instruction
-        JsonObject sys = new JsonObject();
-        sys.addProperty("content",
-                "You are MediDoc, an AI doctor with deep medical knowledge. Answer succinctly and safely."
-        );
-        msgs.add(sys);
-        // user question
-        JsonObject usr = new JsonObject();
-        usr.addProperty("content", userText);
-        msgs.add(usr);
+        // Build the "contents" array
+        JsonObject part = new JsonObject();
+        part.addProperty("text", userText);
 
-        // wrap into prompt
-        JsonObject prompt = new JsonObject();
-        prompt.add("messages", msgs);
+        JsonArray partsArray = new JsonArray();
+        partsArray.add(part);
 
-        // full body
+        JsonObject contentEntry = new JsonObject();
+        contentEntry.add("parts", partsArray);
+
+        JsonArray contentsArray = new JsonArray();
+        contentsArray.add(contentEntry);
+
+        // Full request body
         JsonObject body = new JsonObject();
-        body.add("prompt", prompt);
-        // optional tuning
-        body.addProperty("temperature",    0.2);
-        body.addProperty("candidate_count", 1);
-        body.addProperty("topP",           0.8);
-        body.addProperty("topK",           10);
+        body.add("contents", contentsArray);
 
         RequestBody reqBody = RequestBody.create(
                 body.toString(),
@@ -111,18 +106,39 @@ public class AiDoctorActivity extends AppCompatActivity {
                         ).show()
                 );
             }
+
             @Override public void onResponse(Call call, Response res) throws IOException {
                 if (!res.isSuccessful()) {
                     onFailure(call, new IOException("HTTP " + res.code()));
                     return;
                 }
+
+                // Parse the JSON and safely extract the "text" field
                 JsonObject root = JsonParser
                         .parseString(res.body().string())
                         .getAsJsonObject();
-                String aiText = root
-                        .getAsJsonArray("candidates")
-                        .get(0).getAsJsonObject()
-                        .get("content").getAsString();
+
+                JsonArray candidates = root.getAsJsonArray("candidates");
+                if (candidates == null || candidates.size() == 0) {
+                    runOnUiThread(() ->
+                            Toast.makeText(AiDoctorActivity.this,
+                                    "No response from AI",
+                                    Toast.LENGTH_SHORT
+                            ).show()
+                    );
+                    return;
+                }
+
+                // Now content is an object, so unwrap its "text" property
+                JsonObject candidate = candidates
+                        .get(0).getAsJsonObject();
+
+                JsonObject contentObj = candidate
+                        .getAsJsonObject("content");
+
+                String aiText = contentObj.has("text")
+                        ? contentObj.get("text").getAsString()
+                        : contentObj.toString();
 
                 runOnUiThread(() -> appendMessage(aiText, false));
             }
