@@ -69,21 +69,22 @@ public class AiDoctorActivity extends AppCompatActivity {
     }
 
     /** Build the request and parse the nested content.text correctly */
+    private static final int MAX_RETRIES = 5;
+
     private void callGemini(String userText) {
-        // Build the "contents" array
+        doGeminiRequest(userText, 0);
+    }
+
+    private void doGeminiRequest(String userText, int attempt) {
+        // Build your JSON body (same as before) …
         JsonObject part = new JsonObject();
         part.addProperty("text", userText);
-
         JsonArray partsArray = new JsonArray();
         partsArray.add(part);
-
         JsonObject contentEntry = new JsonObject();
         contentEntry.add("parts", partsArray);
-
         JsonArray contentsArray = new JsonArray();
         contentsArray.add(contentEntry);
-
-        // Full request body
         JsonObject body = new JsonObject();
         body.add("contents", contentsArray);
 
@@ -91,7 +92,6 @@ public class AiDoctorActivity extends AppCompatActivity {
                 body.toString(),
                 MediaType.get("application/json; charset=utf-8")
         );
-
         Request request = new Request.Builder()
                 .url(GEMINI_ENDPOINT)
                 .post(reqBody)
@@ -108,16 +108,22 @@ public class AiDoctorActivity extends AppCompatActivity {
             }
 
             @Override public void onResponse(Call call, Response res) throws IOException {
+                if (res.code() == 503 && attempt < MAX_RETRIES) {
+                    // retry with backoff
+                    long delayMs = (long) Math.pow(2, attempt) * 1000;
+                    new android.os.Handler(getMainLooper())
+                            .postDelayed(() -> doGeminiRequest(userText, attempt + 1), delayMs);
+                    return;
+                }
+
                 if (!res.isSuccessful()) {
                     onFailure(call, new IOException("HTTP " + res.code()));
                     return;
                 }
 
-                // Parse the JSON and safely extract the "text" field
                 JsonObject root = JsonParser
                         .parseString(res.body().string())
                         .getAsJsonObject();
-
                 JsonArray candidates = root.getAsJsonArray("candidates");
                 if (candidates == null || candidates.size() == 0) {
                     runOnUiThread(() ->
@@ -129,13 +135,9 @@ public class AiDoctorActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Now content is an object, so unwrap its "text" property
-                JsonObject candidate = candidates
-                        .get(0).getAsJsonObject();
-
-                JsonObject contentObj = candidate
+                JsonObject contentObj = candidates
+                        .get(0).getAsJsonObject()
                         .getAsJsonObject("content");
-
                 String aiText = contentObj.has("text")
                         ? contentObj.get("text").getAsString()
                         : contentObj.toString();
@@ -144,4 +146,5 @@ public class AiDoctorActivity extends AppCompatActivity {
             }
         });
     }
+
 }

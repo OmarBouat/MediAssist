@@ -3,13 +3,16 @@ package com.mellah.mediassist;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.FileProvider;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,12 +24,11 @@ public class AddPrescriptionActivity extends AppCompatActivity {
     private static final int REQUEST_IMAGE_PICK = 100;
 
     private ImageView ivPrescription;
-    private EditText etDescription;
-    private Button btnChooseImage, btnSave;
-    private Uri selectedImageUri;
+    private EditText  etDescription;
+    private Button    btnChooseImage, btnSave;
+    private Uri       selectedImageUri, cameraImageUri;
     private MediAssistDatabaseHelper dbHelper;
-
-    private int rxId = -1;
+    private int       rxId = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +41,7 @@ public class AddPrescriptionActivity extends AppCompatActivity {
         btnSave        = findViewById(R.id.btnSaveRx);
         dbHelper       = new MediAssistDatabaseHelper(this);
 
-        // Editing: prefill image & desc
+        // If editing, prefill
         Intent intent = getIntent();
         if (intent.hasExtra("rxId")) {
             rxId = intent.getIntExtra("rxId", -1);
@@ -56,31 +58,68 @@ public class AddPrescriptionActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> savePrescription());
     }
 
+    /**
+     * Build a chooser for Camera vs Gallery
+     */
     private void openImageChooser() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(
-                Intent.createChooser(intent, "Select Prescription Image"),
-                REQUEST_IMAGE_PICK
-        );
+        // 1) Gallery picker
+        Intent galleryIntent = new Intent(Intent.ACTION_GET_CONTENT);
+        galleryIntent.setType("image/*");
+
+        // 2) Camera capture
+        Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        try {
+            File photoFile = createImageFile();
+            cameraImageUri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".provider",
+                    photoFile
+            );
+            cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri);
+        } catch (IOException e) {
+            Toast.makeText(this, "Camera not available", Toast.LENGTH_SHORT).show();
+            cameraIntent = null;
+        }
+
+        // 3) Chooser
+        Intent chooser = Intent.createChooser(galleryIntent, "Select image source");
+        if (cameraIntent != null) {
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{ cameraIntent });
+        }
+        startActivityForResult(chooser, REQUEST_IMAGE_PICK);
+    }
+
+    /**
+     * Creates a temp file in your app's external pictures dir.
+     */
+    private File createImageFile() throws IOException {
+        String filename = "rx_" + System.currentTimeMillis();
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        return File.createTempFile(filename, ".jpg", storageDir);
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == REQUEST_IMAGE_PICK
-                && resultCode == RESULT_OK
-                && data != null
-                && data.getData() != null) {
+        if (requestCode != REQUEST_IMAGE_PICK || resultCode != RESULT_OK) return;
 
-            // copy to internal storage
-            String localPath = persistImage(data.getData());
+        Uri uri = null;
+        // Gallery path
+        if (data != null && data.getData() != null) {
+            uri = data.getData();
+        }
+        // Camera path
+        else if (cameraImageUri != null) {
+            uri = cameraImageUri;
+        }
+
+        if (uri != null) {
+            String localPath = persistImage(uri);
             if (localPath != null) {
-                // **store the full Uri string** so Glide can load it later
                 selectedImageUri = Uri.fromFile(new File(localPath));
                 ivPrescription.setImageURI(selectedImageUri);
             } else {
-                Toast.makeText(this, "Failed to copy image", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Failed to save image", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -91,7 +130,6 @@ public class AddPrescriptionActivity extends AppCompatActivity {
             Toast.makeText(this, "Choose an image first", Toast.LENGTH_SHORT).show();
             return;
         }
-        // **Use toString()**, not getPath()
         String uriString = selectedImageUri.toString();
 
         boolean success;
@@ -104,14 +142,17 @@ public class AddPrescriptionActivity extends AppCompatActivity {
             success = id > 0;
         }
 
-        if (success) {
-            Toast.makeText(this, "Prescription saved", Toast.LENGTH_SHORT).show();
-            finish();
-        } else {
-            Toast.makeText(this, "Save failed", Toast.LENGTH_SHORT).show();
-        }
+        Toast.makeText(
+                this,
+                success ? "Prescription saved" : "Save failed",
+                Toast.LENGTH_SHORT
+        ).show();
+        if (success) finish();
     }
 
+    /**
+     * Copy the given URI into internal storage and return its path.
+     */
     private String persistImage(Uri uri) {
         try (InputStream in = getContentResolver().openInputStream(uri)) {
             File file = new File(getFilesDir(),
@@ -123,7 +164,6 @@ public class AddPrescriptionActivity extends AppCompatActivity {
                     out.write(buf, 0, len);
                 }
             }
-            // return the absolute path: we'll wrap it as a file:// URI above
             return file.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
