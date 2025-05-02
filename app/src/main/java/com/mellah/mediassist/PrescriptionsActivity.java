@@ -26,7 +26,7 @@ public class PrescriptionsActivity
 
         dbHelper = new MediAssistDatabaseHelper(this);
         rvRx     = findViewById(R.id.rvPrescriptions);
-        rvRx.setLayoutManager(new GridLayoutManager(this, 2));
+        rvRx.setLayoutManager(new GridLayoutManager(this, 1));
 
         fabAdd = findViewById(R.id.fabAddPrescription);
         fabAdd.setOnClickListener(v ->
