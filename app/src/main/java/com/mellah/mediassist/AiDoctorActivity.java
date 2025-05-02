@@ -41,17 +41,14 @@ public class AiDoctorActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_ai_doctor);
 
-        // 1) bind views
         rvChat    = findViewById(R.id.rvChat);
         etMessage = findViewById(R.id.etMessage);
         btnSend   = findViewById(R.id.btnSend);
 
-        // 2) setup RecyclerView
-        adapter = new ChatAdapter(messages);
+        adapter = new ChatAdapter(this, messages);
         rvChat.setLayoutManager(new LinearLayoutManager(this));
         rvChat.setAdapter(adapter);
 
-        // 3) send on click
         btnSend.setOnClickListener(v -> {
             String text = etMessage.getText().toString().trim();
             if (text.isEmpty()) return;
@@ -61,30 +58,29 @@ public class AiDoctorActivity extends AppCompatActivity {
         });
     }
 
-    /** Add a message to the list and scroll to bottom */
+    /** Append a message (user or AI) to the chat and scroll. */
     private void appendMessage(String txt, boolean isUser) {
         messages.add(new ChatMessage(txt, isUser));
         adapter.notifyItemInserted(messages.size() - 1);
         rvChat.scrollToPosition(messages.size() - 1);
     }
 
-    /** Build the request and parse the nested content.text correctly */
-    private static final int MAX_RETRIES = 5;
-
+    /** Kick off the network call (with retries if you like). */
     private void callGemini(String userText) {
-        doGeminiRequest(userText, 0);
-    }
-
-    private void doGeminiRequest(String userText, int attempt) {
-        // Build your JSON body (same as before) …
+        // Build the request body, including "role":"USER"
         JsonObject part = new JsonObject();
         part.addProperty("text", userText);
+
         JsonArray partsArray = new JsonArray();
         partsArray.add(part);
+
         JsonObject contentEntry = new JsonObject();
+        contentEntry.addProperty("role", "USER");       // ← important!
         contentEntry.add("parts", partsArray);
+
         JsonArray contentsArray = new JsonArray();
         contentsArray.add(contentEntry);
+
         JsonObject body = new JsonObject();
         body.add("contents", contentsArray);
 
@@ -92,6 +88,7 @@ public class AiDoctorActivity extends AppCompatActivity {
                 body.toString(),
                 MediaType.get("application/json; charset=utf-8")
         );
+
         Request request = new Request.Builder()
                 .url(GEMINI_ENDPOINT)
                 .post(reqBody)
@@ -108,22 +105,16 @@ public class AiDoctorActivity extends AppCompatActivity {
             }
 
             @Override public void onResponse(Call call, Response res) throws IOException {
-                if (res.code() == 503 && attempt < MAX_RETRIES) {
-                    // retry with backoff
-                    long delayMs = (long) Math.pow(2, attempt) * 1000;
-                    new android.os.Handler(getMainLooper())
-                            .postDelayed(() -> doGeminiRequest(userText, attempt + 1), delayMs);
-                    return;
-                }
-
                 if (!res.isSuccessful()) {
                     onFailure(call, new IOException("HTTP " + res.code()));
                     return;
                 }
 
+                // Parse the JSON response
                 JsonObject root = JsonParser
                         .parseString(res.body().string())
                         .getAsJsonObject();
+
                 JsonArray candidates = root.getAsJsonArray("candidates");
                 if (candidates == null || candidates.size() == 0) {
                     runOnUiThread(() ->
@@ -135,16 +126,23 @@ public class AiDoctorActivity extends AppCompatActivity {
                     return;
                 }
 
-                JsonObject contentObj = candidates
-                        .get(0).getAsJsonObject()
-                        .getAsJsonObject("content");
-                String aiText = contentObj.has("text")
-                        ? contentObj.get("text").getAsString()
-                        : contentObj.toString();
+                JsonObject candidate = candidates.get(0).getAsJsonObject();
+                JsonObject contentObj = candidate.getAsJsonObject("content");
+                JsonArray aiParts    = contentObj.getAsJsonArray("parts");
 
-                runOnUiThread(() -> appendMessage(aiText, false));
+                String aiText = "";
+                if (aiParts != null && aiParts.size() > 0) {
+                    aiText = aiParts
+                            .get(0).getAsJsonObject()
+                            .get("text").getAsString();
+                } else {
+                    // fallback if schema changes
+                    aiText = contentObj.toString();
+                }
+
+                String finalText = aiText.trim();
+                runOnUiThread(() -> appendMessage(finalText, false));
             }
         });
     }
-
 }

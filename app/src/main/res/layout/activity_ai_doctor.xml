@@ -11,7 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:title="MediDoc AI"
-        android:background="?attr/colorPrimary"
+        android:background="#F5F5F5"
         android:titleTextColor="@android:color/white"/>
 
     <!-- Now fills the space below the toolbar -->
@@ -27,9 +27,9 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="56dp"
+        android:layout_height="96dp"
         android:layout_gravity="bottom"
-        android:padding="8dp">
+        android:padding="12dp">
 
         <EditText
             android:id="@+id/etMessage"
@@ -37,12 +37,19 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:hint="Ask MediDoc..."
+            android:textSize="20sp"
+            android:padding="12dp"
+            android:background="@drawable/bg_input_field"
             android:inputType="textMultiLine"/>
 
         <Button
             android:id="@+id/btnSend"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:text="Send"/>
+            android:text="Send"
+            android:textSize="20sp"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:layout_marginStart="12dp"/>
     </LinearLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
