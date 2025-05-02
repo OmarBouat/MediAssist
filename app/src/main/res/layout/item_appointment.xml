@@ -3,7 +3,11 @@
     android:orientation="vertical"
     android:padding="12dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="#F9F9F9"
+    android:elevation="2dp"
+    android:clipToPadding="false">
 
     <TextView
         android:id="@+id/tvApptTitle"
@@ -11,6 +15,7 @@
         android:layout_height="wrap_content"
         android:textSize="16sp"
         android:textStyle="bold"
+        android:textColor="#333333"
         android:paddingBottom="4dp" />
 
     <TextView
@@ -18,6 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="14sp"
+        android:textColor="#666666"
         android:paddingBottom="8dp" />
 
     <!-- Edit/Delete buttons -->
@@ -32,6 +38,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Edit"
+            android:backgroundTint="#8E24AA"
+            android:textColor="#FFFFFF"
             android:layout_marginEnd="8dp" />
 
         <Button

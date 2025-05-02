@@ -1,52 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
-    android:padding="12dp"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    card_view:cardCornerRadius="12dp"
+    card_view:cardElevation="4dp"
+    android:background="#FFFFFF">
 
-    <TextView
-        android:id="@+id/tvMedName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:paddingBottom="4dp" />
-
-    <TextView
-        android:id="@+id/tvMedDosage"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:paddingBottom="8dp" />
-
-    <TextView
-        android:id="@+id/tvMedTimes"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:textColor="#555"
-        android:paddingBottom="8dp" />
-
-    <!-- Edit/Delete buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <Button
-            android:id="@+id/btnEditMed"
-            android:layout_width="wrap_content"
+        <!-- Medicine Name -->
+        <TextView
+            android:id="@+id/tvMedName"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Edit"
-            android:layout_marginEnd="8dp" />
+            android:text="Medicine Name"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:paddingBottom="4dp" />
 
-        <Button
-            android:id="@+id/btnDeleteMed"
-            android:layout_width="wrap_content"
+        <!-- Dosage -->
+        <TextView
+            android:id="@+id/tvMedDosage"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Delete"
-            android:textColor="#F44336" />
+            android:text="Dosage"
+            android:textSize="15sp"
+            android:textColor="#666666"
+            android:paddingBottom="2dp" />
+
+        <!-- Times -->
+        <TextView
+            android:id="@+id/tvMedTimes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Time to take"
+            android:textSize="15sp"
+            android:textColor="#777777"
+            android:paddingBottom="12dp" />
+
+        <!-- Buttons Row -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <Button
+                android:id="@+id/btnEditMed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Edit"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#7E57C2"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnDeleteMed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:textColor="#FFFFFF"
+                android:backgroundTint="#F44336" />
+        </LinearLayout>
     </LinearLayout>
-</LinearLayout>
+</androidx.cardview.widget.CardView>

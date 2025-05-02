@@ -6,7 +6,10 @@
     android:padding="12dp"
     android:gravity="center_vertical"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    android:background="#F9F9F9"
+    android:elevation="2dp">
 
     <!-- Name + Phone -->
     <LinearLayout
@@ -20,40 +23,49 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:textColor="#333333"/>
 
         <TextView
             android:id="@+id/tvContactPhone"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:textColor="#666666"/>
     </LinearLayout>
 
-    <!-- Call button -->
+    <!-- Call Button -->
     <ImageButton
         android:id="@+id/btnCall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="#F9F9F9"
+        android:layout_marginEnd="8dp"
         android:contentDescription="Call"
         app:srcCompat="@drawable/ic_call"
-        android:layout_marginEnd="8dp"/>
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"/>
 
-    <!-- Edit & Delete -->
+    <!-- Edit Button -->
     <ImageButton
         android:id="@+id/btnEditContact"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="#F9F9F9"
+        android:layout_marginEnd="8dp"
         android:contentDescription="Edit"
-        android:layout_marginEnd="8dp"/>
-    <!-- app:srcCompat="@drawable/ic_edit" -->
+        app:srcCompat="@drawable/edit"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"/>
 
-
+    <!-- Delete Button -->
     <ImageButton
         android:id="@+id/btnDeleteContact"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:contentDescription="Delete"/>
-        <!--app:srcCompat="@drawable/ic_delete" -->
-
-
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:backgroundTint="#F9F9F9"
+        android:contentDescription="Delete"
+        app:srcCompat="@drawable/delete"
+        android:scaleType="centerInside"
+        android:adjustViewBounds="true"/>
 </LinearLayout>

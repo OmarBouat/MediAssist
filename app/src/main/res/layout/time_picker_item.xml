@@ -4,8 +4,11 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="4dp"
-    android:gravity="center_vertical">
+    android:padding="8dp"
+    android:gravity="center_vertical"
+    android:background="#F9F9F9"
+    android:layout_margin="8dp"
+    android:elevation="2dp">
 
     <TextView
         android:id="@+id/tvTimeLabel"
@@ -13,11 +16,17 @@
         android:layout_weight="1"
         android:layout_height="wrap_content"
         android:text="--:--"
-        android:textSize="16sp" />
+        android:textSize="16sp"
+        android:textColor="#333333" />
 
     <Button
         android:id="@+id/btnPickTime"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pick" />
+        android:text="Pick"
+        android:backgroundTint="#8E24AA"
+        android:textColor="#FFFFFF"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="4dp"
+        android:layout_marginStart="8dp" />
 </LinearLayout>
