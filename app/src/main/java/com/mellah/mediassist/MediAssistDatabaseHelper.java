@@ -5,6 +5,9 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.net.Uri;
+
+import java.io.File;
 
 public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "mediassist.db";
@@ -394,12 +397,43 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
 
     /**
      * Update an existing prescription.
+     * Deletes the previous image file (if different) before updating.
      * @return true if at least one row was updated
      */
-    public boolean updatePrescription(int rxId, String imagePath, String description) {
+    public boolean updatePrescription(int rxId, String newImagePath, String description) {
         SQLiteDatabase db = this.getWritableDatabase();
+
+        // Look up the existing imagePath
+        String oldImagePath = null;
+        Cursor c = db.query(
+                TABLE_PRESCRIPTIONS,
+                new String[]{ COLUMN_RX_IMAGE_PATH },
+                COLUMN_RX_ID + " = ?",
+                new String[]{ String.valueOf(rxId) },
+                null, null, null
+        );
+        if (c != null) {
+            if (c.moveToFirst()) {
+                oldImagePath = c.getString(
+                        c.getColumnIndexOrThrow(COLUMN_RX_IMAGE_PATH)
+                );
+            }
+            c.close();
+        }
+
+        // If we're changing to a different image, delete the old file
+        if (oldImagePath != null
+                && !oldImagePath.isEmpty()
+                && !oldImagePath.equals(newImagePath)) {
+            File oldFile = new File(Uri.parse(oldImagePath).getPath());
+            if (oldFile.exists()) {
+                oldFile.delete();
+            }
+        }
+
+        // Perform the DB update
         ContentValues cv = new ContentValues();
-        cv.put(COLUMN_RX_IMAGE_PATH, imagePath);
+        cv.put(COLUMN_RX_IMAGE_PATH, newImagePath);
         cv.put(COLUMN_RX_DESCRIPTION, description);
         int rows = db.update(
                 TABLE_PRESCRIPTIONS,
@@ -408,14 +442,31 @@ public class MediAssistDatabaseHelper extends SQLiteOpenHelper {
                 new String[]{ String.valueOf(rxId) }
         );
         db.close();
+
         return rows > 0;
     }
+
 
     /**
      * Delete a prescription by its ID.
      */
     public boolean deletePrescription(int rxId) {
         SQLiteDatabase db = this.getWritableDatabase();
+        Cursor c = db.query(TABLE_PRESCRIPTIONS,
+                new String[]{COLUMN_RX_IMAGE_PATH},
+                COLUMN_RX_ID + "=?",
+                new String[]{ String.valueOf(rxId) },
+                null,null,null);
+        if (c != null && c.moveToFirst()) {
+            String uriStr = c.getString(0);
+            c.close();
+            // 2) delete the file
+            if (uriStr != null) {
+                File f = new File(Uri.parse(uriStr).getPath());
+                if (f.exists()) f.delete();
+            }
+        }
+
         int rows = db.delete(
                 TABLE_PRESCRIPTIONS,
                 COLUMN_RX_ID + " = ?",
