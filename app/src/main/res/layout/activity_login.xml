@@ -2,7 +2,9 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:fillViewport="true"
+    android:background="#F5F5F5"
+    android:padding="24dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -10,42 +12,70 @@
         android:orientation="vertical"
         android:gravity="center_horizontal">
 
+        <!-- Profile Icon -->
+        <ImageView
+            android:id="@+id/ivProfile"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/profile"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="24dp"
+            android:contentDescription="Profile Icon"
+            android:scaleType="centerCrop"
+            android:padding="8dp"
+            android:elevation="4dp" />
+
+        <!-- Title -->
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="MediAssist"
-            android:textSize="24sp"
-            android:layout_marginBottom="24dp" />
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:layout_marginBottom="32dp" />
 
+        <!-- Username -->
         <EditText
             android:id="@+id/etUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Username"
             android:inputType="textPersonName"
-            android:layout_marginBottom="12dp" />
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
 
+        <!-- Password -->
         <EditText
             android:id="@+id/etPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Password"
             android:inputType="textPassword"
+            android:background="@android:drawable/edit_text"
+            android:padding="12dp"
             android:layout_marginBottom="24dp" />
 
+        <!-- Login Button -->
         <Button
             android:id="@+id/btnLogin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Login"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="#7E57C2"
+            android:textColor="#FFFFFF" />
 
+        <!-- Register Button -->
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Register" />
+            android:text="Register"
+            android:backgroundTint="#757575"
+            android:textColor="#FFFFFF" />
 
     </LinearLayout>
 </ScrollView>
