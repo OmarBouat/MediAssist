@@ -23,7 +23,7 @@ import okhttp3.*;
  * AI Doctor chat UI backed by Gemini 2.0 Flash via the Vertex AI generateContent API.
  */
 public class AiDoctorActivity extends AppCompatActivity {
-    private static final String GEMINI_API_KEY  = BuildConfig.GEMINI_API_KEY;
+    private static final String GEMINI_API_KEY  = "AIzaSyAKDVbobmRKdacoUE2re_H4eu09gGkqsHb4";
     private static final String GEMINI_ENDPOINT =
             "https://generativelanguage.googleapis.com/v1beta/models/"
                     + "gemini-2.0-flash:generateContent?key="
