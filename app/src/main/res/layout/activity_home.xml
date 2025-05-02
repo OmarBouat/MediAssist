@@ -204,7 +204,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:text="Profile"
+                    android:text="AI Doctor"
                     android:textAlignment="center"
                     android:textColor="#4A148C"
                     android:textSize="18sp"
