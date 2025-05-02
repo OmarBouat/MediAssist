@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
         if (isFirstRun) {
             // mark that we've shown the welcome screen
             appPrefs.edit()
-                    .putBoolean(KEY_FIRST_RUN, true) // TODO: CHANGE TO FALSE!!!!!!!!!!
+                    .putBoolean(KEY_FIRST_RUN, false)
                     .apply();
 
             // launch the welcome/setup activity

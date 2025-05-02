@@ -196,9 +196,8 @@
                     android:layout_height="100dp"
                     android:scaleType="centerCrop"
                     android:background="?attr/selectableItemBackgroundBorderless"
-
+                    android:src="@drawable/aidoctor"
                     android:contentDescription="AI Doctor" />
-                <!-- android:src="@drawable/ic_ai_doctor" <- add picture here -->
 
                 <TextView
                     android:layout_width="wrap_content"
