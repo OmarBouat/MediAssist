@@ -15,8 +15,9 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            android:background="#EBFFFD"
-            />
+            android:background="#D1FFEC"
+            android:titleTextColor="#FFFFFF"
+            android:elevation="4dp" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <ScrollView
@@ -30,7 +31,11 @@
             android:columnCount="2"
             android:paddingBottom="16dp"
             android:alignmentMode="alignMargins"
-            android:useDefaultMargins="true">
+            android:useDefaultMargins="true"
+            android:columnOrderPreserved="false"
+            android:paddingTop="16dp"
+            android:paddingStart="8dp"
+            android:paddingEnd="8dp">
 
             <!-- Medications -->
             <LinearLayout
@@ -38,13 +43,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnMedications"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/medication"
                     android:contentDescription="medications" />
@@ -53,11 +59,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Medications"
                     android:textAlignment="center"
                     android:textColor="#BC0000"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -67,13 +72,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnAppointments"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/appointment"
                     android:contentDescription="appointments" />
@@ -82,11 +88,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Appointments"
                     android:textAlignment="center"
                     android:textColor="#F68E8E"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -96,13 +101,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnPrescriptions"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/prescription"
                     android:contentDescription="prescriptions" />
@@ -111,11 +117,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Prescriptions"
                     android:textAlignment="center"
                     android:textColor="#D99E05"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -125,13 +130,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnContacts"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/emergency"
                     android:contentDescription="emergency_contacts" />
@@ -140,11 +146,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Contacts"
                     android:textAlignment="center"
                     android:textColor="#F80000"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -154,13 +159,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnSchedule"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/schedule"
                     android:contentDescription="schedule" />
@@ -169,11 +175,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Schedule"
                     android:textAlignment="center"
                     android:textColor="#023352"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -183,13 +188,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnProfile"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/profile"
                     android:contentDescription="profile" />
@@ -198,11 +204,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Profile"
                     android:textAlignment="center"
                     android:textColor="#13BED7"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
@@ -212,13 +217,14 @@
                 android:layout_height="wrap_content"
                 android:layout_columnWeight="1"
                 android:orientation="vertical"
-                android:gravity="center">
+                android:gravity="center"
+                android:padding="8dp">
 
                 <ImageButton
                     android:id="@+id/btnSettings"
-                    android:layout_width="100dp"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:scaleType="centerInside"
                     android:background="?attr/selectableItemBackgroundBorderless"
                     android:src="@drawable/settings"
                     android:contentDescription="settings" />
@@ -227,11 +233,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="monospace"
-                    android:paddingBottom="20dp"
                     android:text="Settings"
                     android:textAlignment="center"
                     android:textColor="#767575"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
