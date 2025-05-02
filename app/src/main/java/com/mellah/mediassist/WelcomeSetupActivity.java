@@ -50,7 +50,7 @@ public class WelcomeSetupActivity extends AppCompatActivity {
                 "Store and call your emergency contacts in one tap."
         ));
         slides.add(new SlideItem(
-                R.drawable.emergency,
+                R.drawable.aidoctor,
                 "AI Doctor",
                 "Your personal doctor powered using artificial intelligence."
         ));
