@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -40,47 +39,21 @@ public class AddPrescriptionActivity extends AppCompatActivity {
         btnSave        = findViewById(R.id.btnSaveRx);
         dbHelper       = new MediAssistDatabaseHelper(this);
 
-        // If editing, prefill
+        // Editing: prefill image & desc
         Intent intent = getIntent();
         if (intent.hasExtra("rxId")) {
             rxId = intent.getIntExtra("rxId", -1);
-
             String path = intent.getStringExtra("imagePath");
             if (path != null && !path.isEmpty()) {
                 selectedImageUri = Uri.parse(path);
                 ivPrescription.setImageURI(selectedImageUri);
             }
-
             String desc = intent.getStringExtra("description");
             etDescription.setText(desc != null ? desc : "");
         }
 
-
         btnChooseImage.setOnClickListener(v -> openImageChooser());
-
-        btnSave.setOnClickListener(v -> {
-            String desc = etDescription.getText().toString().trim();
-            if (selectedImageUri == null) {
-                Toast.makeText(this, "Choose an image first", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            String uriString = selectedImageUri.getPath();
-            boolean success;
-            if (rxId >= 0) {
-                success = dbHelper.updatePrescription(rxId, uriString, desc);
-            } else {
-                int userId = getSharedPreferences("user_session", MODE_PRIVATE)
-                        .getInt("currentUserId", -1);
-                long id = dbHelper.addPrescription(userId, uriString, desc);
-                success = id > 0;
-            }
-            if (success) {
-                Toast.makeText(this, "Prescription saved", Toast.LENGTH_SHORT).show();
-                finish();
-            } else {
-                Toast.makeText(this, "Save failed", Toast.LENGTH_SHORT).show();
-            }
-        });
+        btnSave.setOnClickListener(v -> savePrescription());
     }
 
     private void openImageChooser() {
@@ -99,8 +72,11 @@ public class AddPrescriptionActivity extends AppCompatActivity {
                 && resultCode == RESULT_OK
                 && data != null
                 && data.getData() != null) {
+
+            // copy to internal storage
             String localPath = persistImage(data.getData());
             if (localPath != null) {
+                // **store the full Uri string** so Glide can load it later
                 selectedImageUri = Uri.fromFile(new File(localPath));
                 ivPrescription.setImageURI(selectedImageUri);
             } else {
@@ -109,17 +85,46 @@ public class AddPrescriptionActivity extends AppCompatActivity {
         }
     }
 
+    private void savePrescription() {
+        String desc = etDescription.getText().toString().trim();
+        if (selectedImageUri == null) {
+            Toast.makeText(this, "Choose an image first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        // **Use toString()**, not getPath()
+        String uriString = selectedImageUri.toString();
+
+        boolean success;
+        if (rxId >= 0) {
+            success = dbHelper.updatePrescription(rxId, uriString, desc);
+        } else {
+            int userId = getSharedPreferences("user_session", MODE_PRIVATE)
+                    .getInt("currentUserId", -1);
+            long id = dbHelper.addPrescription(userId, uriString, desc);
+            success = id > 0;
+        }
+
+        if (success) {
+            Toast.makeText(this, "Prescription saved", Toast.LENGTH_SHORT).show();
+            finish();
+        } else {
+            Toast.makeText(this, "Save failed", Toast.LENGTH_SHORT).show();
+        }
+    }
+
     private String persistImage(Uri uri) {
         try (InputStream in = getContentResolver().openInputStream(uri)) {
-            File file = new File(getFilesDir(), "rx_" + System.currentTimeMillis() + ".jpg");
+            File file = new File(getFilesDir(),
+                    "rx_" + System.currentTimeMillis() + ".jpg");
             try (OutputStream out = new FileOutputStream(file)) {
-                byte[] buffer = new byte[4096];
+                byte[] buf = new byte[4096];
                 int len;
-                while ((len = in.read(buffer)) > 0) {
-                    out.write(buffer, 0, len);
+                while ((len = in.read(buf)) > 0) {
+                    out.write(buf, 0, len);
                 }
             }
-            return file.getAbsolutePath(); // <- save this in DB
+            // return the absolute path: we'll wrap it as a file:// URI above
+            return file.getAbsolutePath();
         } catch (IOException e) {
             e.printStackTrace();
             return null;

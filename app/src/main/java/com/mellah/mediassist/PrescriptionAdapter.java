@@ -1,6 +1,7 @@
 package com.mellah.mediassist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.view.LayoutInflater;
@@ -54,13 +55,22 @@ public class PrescriptionAdapter
         );
 
         holder.tvDesc.setText(desc != null ? desc : "");
-        if (path != null) {
+
+        // load via Glide using a real URI
+        if (path != null && !path.isEmpty()) {
             Uri imageUri = Uri.parse(path);
             Glide.with(context)
                     .load(imageUri)
                     .placeholder(R.drawable.placeholder)
                     .error(R.drawable.placeholder)
                     .into(holder.ivRx);
+
+            // **full-screen on tap**
+            holder.ivRx.setOnClickListener(v -> {
+                Intent i = new Intent(context, FullScreenImageActivity.class);
+                i.putExtra("imageUri", path);
+                context.startActivity(i);
+            });
         } else {
             holder.ivRx.setImageResource(R.drawable.placeholder);
         }
@@ -90,10 +100,10 @@ public class PrescriptionAdapter
         Button btnEdit, btnDelete;
         ViewHolder(View itemView) {
             super(itemView);
-            ivRx     = itemView.findViewById(R.id.ivPrescription);
-            tvDesc   = itemView.findViewById(R.id.tvRxDesc);
-            btnEdit  = itemView.findViewById(R.id.btnEditRx);
-            btnDelete= itemView.findViewById(R.id.btnDeleteRx);
+            ivRx      = itemView.findViewById(R.id.ivPrescription);
+            tvDesc    = itemView.findViewById(R.id.tvRxDesc);
+            btnEdit   = itemView.findViewById(R.id.btnEditRx);
+            btnDelete = itemView.findViewById(R.id.btnDeleteRx);
         }
     }
 }
